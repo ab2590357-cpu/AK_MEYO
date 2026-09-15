@@ -1,6 +1,6 @@
 import { downloadMediaMessage } from '@whiskeysockets/baileys';
-import { logger } from '../../lib/core/logger.js';
-import { contextInfo, unwrapMessage } from '../../lib/utils/message.js';
+import { logger } from '../lib/core/logger.js';
+import { contextInfo, unwrapMessage } from '../lib/utils/message.js';
 
 function quotedMessage(msg) {
   return contextInfo(msg)?.quotedMessage || null;
