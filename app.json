@@ -1,0 +1,38 @@
+{
+  "name": "ABDULLAH-X-HK WHATSAPP BOT",
+  "description": "A-X-HK V4.10 premium isolated owner dashboard + secure public user-link WhatsApp bot network",
+  "repository": "",
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "baileys",
+    "a-x-hk"
+  ],
+  "stack": "container",
+  "env": {
+    "BOT_NAME": {
+      "value": "ABDULLAH-X-HK WHATSAPP BOT"
+    },
+    "SHORT_NAME": {
+      "value": "A-X-HK"
+    },
+    "OWNER_NAME": {
+      "value": "ABDULLAH-X-HK"
+    },
+    "OWNER_NUMBER": {
+      "value": "923044596780"
+    },
+    "DASHBOARD_TOKEN": {
+      "description": "Optional legacy API token; use a long random secret when deploying the separate Pair Site"
+    },
+    "MODE": {
+      "value": "public"
+    },
+    "MAX_MULTI_SESSIONS": {
+      "value": "20"
+    },
+    "MULTI_PAIR_ENABLED": {
+      "value": "true"
+    }
+  }
+}

@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "description": "Editable A-X-HK media command manifest. Add/rename media commands here; each command must map to an existing supported platform.",
+  "notes": [
+    "Edit only valid JSON; comments are not allowed.",
+    "Set enabled=false to disable a media command without deleting it.",
+    "name and aliases are typed after the bot prefix.",
+    "platform must be one of the built-in public-media platforms or download.",
+    "This manifest does not enable private/login/DRM access or any bypass system."
+  ],
+  "commands": [
+    {
+      "name": "download",
+      "aliases": [
+        "dl",
+        "media"
+      ],
+      "platform": "download",
+      "description": "Download from a supported public-media URL",
+      "usage": "download <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "tiktok",
+      "aliases": [
+        "tt",
+        "tiktokdl"
+      ],
+      "platform": "tiktok",
+      "description": "Download a public TikTok video",
+      "usage": "tiktok <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "instagram",
+      "aliases": [
+        "ig",
+        "insta",
+        "igdl"
+      ],
+      "platform": "instagram",
+      "description": "Download a public Instagram post/reel video",
+      "usage": "instagram <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "facebook",
+      "aliases": [
+        "fb",
+        "fbdl"
+      ],
+      "platform": "facebook",
+      "description": "Download a public Facebook video",
+      "usage": "facebook <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "twitter",
+      "aliases": [
+        "xdl",
+        "twitterdl"
+      ],
+      "platform": "twitter",
+      "description": "Download a public X/Twitter video",
+      "usage": "twitter <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "youtube",
+      "aliases": [
+        "yt",
+        "ytdl"
+      ],
+      "platform": "youtube",
+      "description": "Download a public YouTube video by URL or search words",
+      "usage": "youtube <URL or search words>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "reddit",
+      "aliases": [
+        "redditdl"
+      ],
+      "platform": "reddit",
+      "description": "Download a public Reddit media post",
+      "usage": "reddit <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "pinterest",
+      "aliases": [
+        "pin",
+        "pindl"
+      ],
+      "platform": "pinterest",
+      "description": "Download public Pinterest media",
+      "usage": "pinterest <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "threads",
+      "aliases": [
+        "threadsdl"
+      ],
+      "platform": "threads",
+      "description": "Download public Threads media when available",
+      "usage": "threads <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "twitch",
+      "aliases": [
+        "twitchdl"
+      ],
+      "platform": "twitch",
+      "description": "Download a public Twitch clip/video when supported",
+      "usage": "twitch <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "vimeo",
+      "aliases": [
+        "vimeodl"
+      ],
+      "platform": "vimeo",
+      "description": "Download a public Vimeo video",
+      "usage": "vimeo <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "dailymotion",
+      "aliases": [
+        "dailymotiondl"
+      ],
+      "platform": "dailymotion",
+      "description": "Download a public Dailymotion video",
+      "usage": "dailymotion <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "soundcloud",
+      "aliases": [
+        "scdl"
+      ],
+      "platform": "soundcloud",
+      "description": "Download public SoundCloud audio when available",
+      "usage": "soundcloud <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "snapchat",
+      "aliases": [
+        "snapdl"
+      ],
+      "platform": "snapchat",
+      "description": "Download supported public Snapchat media",
+      "usage": "snapchat <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "tumblr",
+      "aliases": [
+        "tumblrdl"
+      ],
+      "platform": "tumblr",
+      "description": "Download public Tumblr media",
+      "usage": "tumblr <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "imgur",
+      "aliases": [
+        "imgurdl"
+      ],
+      "platform": "imgur",
+      "description": "Download public Imgur media",
+      "usage": "imgur <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "streamable",
+      "aliases": [
+        "streamabledl"
+      ],
+      "platform": "streamable",
+      "description": "Download a public Streamable video",
+      "usage": "streamable <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "bilibili",
+      "aliases": [
+        "bilidl"
+      ],
+      "platform": "bilibili",
+      "description": "Download public Bilibili media when available",
+      "usage": "bilibili <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "vk",
+      "aliases": [
+        "vkdl"
+      ],
+      "platform": "vk",
+      "description": "Download public VK media when available",
+      "usage": "vk <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "rumble",
+      "aliases": [
+        "rumbledl"
+      ],
+      "platform": "rumble",
+      "description": "Download public Rumble media when available",
+      "usage": "rumble <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    },
+    {
+      "name": "bandcamp",
+      "aliases": [
+        "bandcampdl"
+      ],
+      "platform": "bandcamp",
+      "description": "Download public Bandcamp audio when available",
+      "usage": "bandcamp <public URL>",
+      "cooldown": 8,
+      "enabled": true
+    }
+  ]
+}

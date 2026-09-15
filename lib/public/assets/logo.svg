@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="A-X-HK logo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8b5cf6"/><stop offset=".48" stop-color="#22d3ee"/><stop offset="1" stop-color="#f6c85f"/></linearGradient>
+    <radialGradient id="bg"><stop stop-color="#16213b"/><stop offset="1" stop-color="#070914"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="118" fill="url(#bg)"/>
+  <rect x="18" y="18" width="476" height="476" rx="104" fill="none" stroke="url(#g)" stroke-width="7"/>
+  <path d="M112 350 204 151h51l-92 199zm76-77h121l20 43H168z" fill="url(#g)"/>
+  <path d="m287 167 35 58 35-58h52l-61 92 66 98h-55l-39-64-39 64h-53l67-100-60-90z" fill="#eef4ff"/>
+  <text x="256" y="421" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="32" font-weight="800" letter-spacing="7" fill="#aeb8d6">A-X-HK</text>
+</svg>
