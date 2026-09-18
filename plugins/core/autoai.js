@@ -16,10 +16,11 @@ registerCommand({
   name: 'autoai',
   aliases: ['auto-ai', 'assistant', 'aiassistant', 'botai'],
   category: 'settings',
-  description: 'Toggle A_X_HK AI assistant for all incoming messages',
+  description: 'Master-owner control for A_X_HK AI assistant',
   ownerOnly: true,
   usage: 'autoai on|off|status',
   async run(ctx) {
+    if (ctx.sessionId !== 'main' || !ctx.isMasterOwnerAction) return;
     const action = String(ctx.args[0] || 'status').toLowerCase();
     if (!['on', 'off', 'status', 'check'].includes(action)) {
       return ctx.reply(`Usage: ${ctx.prefix}autoai on|off|status`);
@@ -47,7 +48,7 @@ registerCommand({
       `┃ ${aiEngineLabel()}`,
       '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯',
       '',
-      'Auto AI is independent from the fixed Time Reply feature.',
+      'Master owner / main session only. Auto AI is independent from the fixed Time Reply feature.',
       '',
       '★ 𝐏𝐎𝐖𝐄𝐑𝐄𝐃 𝐁𝐘 𝐀𝐁𝐃𝐔𝐋𝐋𝐀𝐇_𝐗_𝐇𝐊 ★'
     ].join('\n'));
