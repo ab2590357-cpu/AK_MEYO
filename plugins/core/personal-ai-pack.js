@@ -1,6 +1,13 @@
 import dns from 'node:dns/promises';
 import net from 'node:net';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import sharp from 'sharp';
+import ffmpegPath from 'ffmpeg-static';
 import { downloadMediaMessage } from '@whiskeysockets/baileys';
 import { Sticker, StickerTypes } from 'wa-sticker-formatter';
 import { registerCommand, commandsByCategory } from '../../lib/core/registry.js';
@@ -11,6 +18,8 @@ import { askAI, askAIVision, editAIImage, generateAIImage, transcribeAudio } fro
 import { recentChatMessages } from '../../lib/services/chat-history.js';
 import { botKnowledgePrompt } from '../../lib/core/bot-knowledge.js';
 import { contextInfo, unwrapMessage } from '../../lib/utils/message.js';
+
+const execFileAsync = promisify(execFile);
 
 const safeText = (value = '', max = 3000) => String(value || '').replace(/\0/g, '').trim().slice(0, max);
 const ownerGuard = (ctx) => ctx.sessionId === 'main' && ctx.isMasterOwnerAction;
@@ -84,6 +93,38 @@ async function getMedia(ctx, allowedKinds = []) {
 async function ownerOnlyRun(ctx, fn) {
   if (!ownerGuard(ctx)) return;
   return fn();
+}
+
+function mediaExt(fileName = '', mimeType = '') {
+  const ext = path.extname(String(fileName || '')).replace(/[^.a-z0-9]/gi, '').slice(0, 8);
+  if (ext) return ext;
+  if (/mp4/i.test(mimeType)) return '.mp4';
+  if (/webm/i.test(mimeType)) return '.webm';
+  if (/ogg|opus/i.test(mimeType)) return '.ogg';
+  if (/mpeg|mp3/i.test(mimeType)) return '.mp3';
+  if (/wav/i.test(mimeType)) return '.wav';
+  return '.bin';
+}
+
+async function runFfmpegBuffer(media, args, outExt, timeoutMs = 120000) {
+  if (!ffmpegPath) throw new Error('FFmpeg runtime is unavailable.');
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'axhk-media-'));
+  const token = crypto.randomBytes(5).toString('hex');
+  const input = path.join(root, 'input-' + token + mediaExt(media.fileName, media.mimeType));
+  const output = path.join(root, 'output-' + token + outExt);
+  try {
+    await fs.writeFile(input, media.buffer);
+    await execFileAsync(ffmpegPath, ['-y', '-hide_banner', '-loglevel', 'error', '-i', input, ...args, output], {
+      timeout: timeoutMs,
+      maxBuffer: 2 * 1024 * 1024
+    });
+    const out = await fs.readFile(output);
+    if (!out?.length) throw new Error('Media conversion returned an empty file.');
+    if (out.length > 40 * 1024 * 1024) throw new Error('Converted file is too large to send safely.');
+    return out;
+  } finally {
+    await fs.rm(root, { recursive: true, force: true }).catch(() => {});
+  }
 }
 
 function commandReplyPrompt(style, input) {
@@ -788,6 +829,167 @@ registerCommand({
         request
       ].join('\n');
       await ctx.reply(await askAI(prompt, 'owner-command-router', { maxChars: 1800 }));
+    });
+  }
+});
+
+
+registerCommand({
+  name: 'upscaleimg',
+  aliases: ['imageupscale'],
+  category: 'media',
+  description: 'Upscale a quoted image up to 2x with high-quality resampling',
+  usage: 'upscaleimg (reply to image)',
+  ownerOnly: true,
+  cooldown: 3,
+  async run(ctx) {
+    return ownerOnlyRun(ctx, async () => {
+      const media = await getMedia(ctx, ['image', 'sticker']);
+      const meta = await sharp(media.buffer).metadata();
+      const width = Math.max(1, Number(meta.width || 512));
+      const height = Math.max(1, Number(meta.height || 512));
+      const scale = Math.min(2, 2048 / Math.max(width, height));
+      const output = await sharp(media.buffer)
+        .rotate()
+        .resize(Math.max(1, Math.round(width * scale)), Math.max(1, Math.round(height * scale)), {
+          kernel: sharp.kernel.lanczos3,
+          withoutEnlargement: false
+        })
+        .png()
+        .toBuffer();
+      await ctx.send({ document: output, mimetype: 'image/png', fileName: 'A-X-HK-upscaled.png', caption: '🔎 Image upscaled' }, { quoted: ctx.msg });
+    });
+  }
+});
+
+registerCommand({
+  name: 'videoaudio',
+  aliases: ['toaudio', 'videomp3'],
+  category: 'media',
+  description: 'Extract MP3 audio from a quoted video',
+  usage: 'videoaudio (reply to video)',
+  ownerOnly: true,
+  cooldown: 5,
+  async run(ctx) {
+    return ownerOnlyRun(ctx, async () => {
+      const media = await getMedia(ctx, ['video']);
+      const output = await runFfmpegBuffer(media, ['-vn', '-acodec', 'libmp3lame', '-b:a', '192k'], '.mp3');
+      await ctx.send({ document: output, mimetype: 'audio/mpeg', fileName: 'A-X-HK-audio.mp3', caption: '🎧 Audio extracted' }, { quoted: ctx.msg });
+    });
+  }
+});
+
+registerCommand({
+  name: 'videocompress',
+  aliases: ['compressvideo'],
+  category: 'media',
+  description: 'Compress a quoted video to a smaller MP4',
+  usage: 'videocompress [quality 23-38]',
+  ownerOnly: true,
+  cooldown: 8,
+  async run(ctx) {
+    return ownerOnlyRun(ctx, async () => {
+      const media = await getMedia(ctx, ['video']);
+      const crf = Math.max(23, Math.min(38, Number(ctx.args[0]) || 30));
+      const output = await runFfmpegBuffer(
+        media,
+        ['-c:v', 'libx264', '-preset', 'veryfast', '-crf', String(crf), '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart'],
+        '.mp4',
+        180000
+      );
+      await ctx.send({ document: output, mimetype: 'video/mp4', fileName: 'A-X-HK-compressed.mp4', caption: '🗜️ Video compressed • CRF ' + crf }, { quoted: ctx.msg });
+    });
+  }
+});
+
+registerCommand({
+  name: 'trimvideo',
+  aliases: ['videotrim'],
+  category: 'media',
+  description: 'Trim a quoted video by start time and duration',
+  usage: 'trimvideo <start-sec> <duration-sec>',
+  ownerOnly: true,
+  cooldown: 6,
+  async run(ctx) {
+    return ownerOnlyRun(ctx, async () => {
+      const start = Math.max(0, Number(ctx.args[0]) || 0);
+      const duration = Math.max(1, Math.min(600, Number(ctx.args[1]) || 15));
+      const media = await getMedia(ctx, ['video']);
+      const output = await runFfmpegBuffer(
+        media,
+        ['-ss', String(start), '-t', String(duration), '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '24', '-c:a', 'aac', '-movflags', '+faststart'],
+        '.mp4',
+        180000
+      );
+      await ctx.send({ document: output, mimetype: 'video/mp4', fileName: 'A-X-HK-trimmed.mp4', caption: '✂️ Trimmed from ' + start + 's for ' + duration + 's' }, { quoted: ctx.msg });
+    });
+  }
+});
+
+registerCommand({
+  name: 'audiocut',
+  aliases: ['trimaudio'],
+  category: 'media',
+  description: 'Cut a section from quoted audio or video into MP3',
+  usage: 'audiocut <start-sec> <duration-sec>',
+  ownerOnly: true,
+  cooldown: 5,
+  async run(ctx) {
+    return ownerOnlyRun(ctx, async () => {
+      const start = Math.max(0, Number(ctx.args[0]) || 0);
+      const duration = Math.max(1, Math.min(600, Number(ctx.args[1]) || 15));
+      const media = await getMedia(ctx, ['audio', 'video']);
+      const output = await runFfmpegBuffer(
+        media,
+        ['-ss', String(start), '-t', String(duration), '-vn', '-acodec', 'libmp3lame', '-b:a', '192k'],
+        '.mp3'
+      );
+      await ctx.send({ document: output, mimetype: 'audio/mpeg', fileName: 'A-X-HK-cut.mp3', caption: '✂️ Audio cut from ' + start + 's for ' + duration + 's' }, { quoted: ctx.msg });
+    });
+  }
+});
+
+registerCommand({
+  name: 'videogif',
+  aliases: ['togif'],
+  category: 'media',
+  description: 'Convert a short quoted video to GIF',
+  usage: 'videogif [seconds max 12]',
+  ownerOnly: true,
+  cooldown: 8,
+  async run(ctx) {
+    return ownerOnlyRun(ctx, async () => {
+      const seconds = Math.max(1, Math.min(12, Number(ctx.args[0]) || 6));
+      const media = await getMedia(ctx, ['video']);
+      const output = await runFfmpegBuffer(
+        media,
+        ['-t', String(seconds), '-vf', 'fps=12,scale=480:-1:flags=lanczos', '-loop', '0'],
+        '.gif',
+        180000
+      );
+      await ctx.send({ document: output, mimetype: 'image/gif', fileName: 'A-X-HK.gif', caption: '🎞️ Video converted to GIF' }, { quoted: ctx.msg });
+    });
+  }
+});
+
+registerCommand({
+  name: 'giftovideo',
+  aliases: ['gifvideo'],
+  category: 'media',
+  description: 'Convert a quoted GIF/video-style GIF to MP4',
+  usage: 'giftovideo (reply to GIF/video)',
+  ownerOnly: true,
+  cooldown: 6,
+  async run(ctx) {
+    return ownerOnlyRun(ctx, async () => {
+      const media = await getMedia(ctx, ['video', 'document']);
+      const output = await runFfmpegBuffer(
+        media,
+        ['-movflags', '+faststart', '-pix_fmt', 'yuv420p', '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2', '-c:v', 'libx264', '-an'],
+        '.mp4',
+        180000
+      );
+      await ctx.send({ document: output, mimetype: 'video/mp4', fileName: 'A-X-HK-gif-video.mp4', caption: '🎬 GIF converted to MP4' }, { quoted: ctx.msg });
     });
   }
 });
