@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node scripts/apply-away-policy.mjs && node index.js",
     "dev": "node --watch index.js",
-    "check": "node --test tests/away-policy.test.mjs && node scripts/apply-away-policy.mjs && node --check index.js && node --check main.js && node --check lib/index.js && node --check lib/core/dispatcher.js"
+    "check": "node --test tests/away-policy.test.mjs && node tests/auto-reply-policy.test.js && node scripts/apply-away-policy.mjs && node --check index.js && node --check main.js && node --check lib/index.js && node --check lib/core/dispatcher.js"
   },
   "engines": {
     "node": ">=20.11.0"
