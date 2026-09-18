@@ -11,6 +11,7 @@ registerCommand({
   category: 'settings',
   description: 'Master-owner control for fixed office and sleep replies',
   ownerOnly: true,
+  masterOnly: true,
   usage: 'timereply on|off|status',
   async run(ctx) {
     if (ctx.sessionId !== 'main' || !ctx.isMasterOwnerAction) return;
