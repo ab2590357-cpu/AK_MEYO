@@ -17,7 +17,7 @@ function formatWhen(at) {
 
 registerCommand({
   name: 'alerts',
-  aliases: ['importantalerts', 'owneralerts'],
+  aliases: ['importantalerts'],
   category: 'settings',
   description: 'Master-owner control for smart important-message alerts',
   ownerOnly: true,
