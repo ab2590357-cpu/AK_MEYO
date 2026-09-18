@@ -64,7 +64,7 @@ const NEW_MAYBE_DIRECT_AUTOMATION = [
   '        return `${who}: ${r.text}`;',
   '      }).join(\'\\n\');',
   "      const statusLine = slot.key === 'sleep'",
-  "        ? 'Abdullah is currently resting/sleeping. Sleep Time: 10:00 AM to 5:00 PM.'",
+  "        ? 'Abdullah is currently resting/sleeping. Sleep Time: 10:00 AM to 4:00 PM.'",
   "        : 'Abdullah is currently at the office. Office Time: 9:00 PM to 8:00 AM.';",
   '      const instruction = ctx.isGroup',
   "        ? 'You were directly mentioned in a WhatsApp group. Reply only to the latest relevant message, and keep the reply inside the group.'",
