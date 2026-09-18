@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { patchDispatcherSource } from '../scripts/apply-away-policy.mjs';
 import { enforceAwayPolicy } from '../lib/core/database.js';
-import { AUTO_REPLY_TEXT, shouldSendAwayReply } from '../lib/core/auto-reply-policy.js';
+import { AUTO_REPLY_TEXT, normalizeAwayText, shouldSendAwayReply } from '../lib/core/auto-reply-policy.js';
 
 test('dispatcher away policy validates helper-based owner activity suppression', () => {
   const source = [
@@ -54,18 +54,24 @@ test('away auto reply still runs for non-text messages', () => {
   assert.match(patched, /if \(!ctx\.text\) \{\n    await maybeDirectAutomation\(ctx\);\n    return;\n  \}/);
 });
 
-test('session away policy forces auto response on and AFK off', () => {
+test('session away policy forces selected auto response on and AFK off', () => {
   const patched = enforceAwayPolicy({
-    away: { enabled: false, text: 'Custom busy reply' },
+    away: { enabled: false, text: 'I am currently away. I will reply when I am available.' },
     awayCooldownHours: 1,
     afk: { enabled: true, reason: 'old afk' }
   });
 
   assert.equal(patched.away.enabled, true);
-  assert.equal(patched.away.text, 'Custom busy reply');
+  assert.equal(patched.away.text, AUTO_REPLY_TEXT);
   assert.equal(patched.awayCooldownHours, 4);
   assert.equal(patched.afk.enabled, false);
   assert.equal(patched.afk.reason, '');
+});
+
+test('normalizeAwayText always returns selected mobile-safe text', () => {
+  assert.equal(normalizeAwayText(''), AUTO_REPLY_TEXT);
+  assert.equal(normalizeAwayText('Custom busy reply'), AUTO_REPLY_TEXT);
+  assert.equal(normalizeAwayText('I am currently away. I will reply when I am available.'), AUTO_REPLY_TEXT);
 });
 
 test('session away policy provides mobile-safe selected default text', () => {
