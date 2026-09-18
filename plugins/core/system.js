@@ -7,6 +7,7 @@ import { db } from '../../lib/core/database.js';
 import { formatUptime, sleep } from '../../lib/utils/text.js';
 import { serifBold, premiumLabel, premiumTitle } from '../../lib/utils/brand-style.js';
 import { readMenuCard } from '../../lib/services/menu-card.js';
+import { waManager } from '../../lib/services/whatsapp.js';
 
 const categoryIcons = {
   system: '🤖', tools: '🧰', utility: '🛠️', text: '✍️', productivity: '📋', games: '🎮', fun: '🎉',
@@ -83,6 +84,20 @@ function publicBaseUrl() {
 
 function userLinkPortalUrl() {
   return `${publicBaseUrl()}/link`;
+}
+
+function formatDirectPairCode(value = '') {
+  const code = String(value || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+  return code.match(/.{1,4}/g)?.join('-') || code;
+}
+
+function existingLinkedSessionId(phone = '') {
+  const digits = String(phone || '').replace(/\D/g, '');
+  const hit = Object.entries(db.data.linkedSessions || {}).find(([, meta]) => {
+    if (meta?.enabled === false) return false;
+    return [meta?.phone, meta?.linkedNumber].some((value) => String(value || '').replace(/\D/g, '') === digits);
+  });
+  return hit?.[0] || '';
 }
 
 function creatorStudioUrl() {
@@ -435,18 +450,65 @@ registerCommand({
 registerCommand({ name: 'dashboard', category: 'owner', ownerOnly: true, description: 'Show the protected owner dashboard URL', async run(ctx) { const base=String(config.publicUrl||'').replace(/\/$/,''); await ctx.reply([...rowBox('OWNER DASHBOARD', [`┃ 🔐 ${base ? `${base}/owner` : `http://localhost:${config.port}/owner`}`, `┃ 👑 Protected admin area`], '🛡️'), '', ...premiumFooterBlock()].join('\n')); } });
 registerCommand({ name: 'pairsite', aliases: ['ownerpair'], category: 'owner', ownerOnly: true, description: 'Show protected owner pairing URL', async run(ctx) { const base=String(config.publicUrl||'').replace(/\/$/,''); await ctx.reply([...rowBox('OWNER PAIR CENTER', [`┃ 🔐 ${base ? `${base}/pair` : `http://localhost:${config.port}/pair`}`, `┃ 👑 Owner-only pairing area`], '🔗'), '', ...premiumFooterBlock()].join('\n')); } });
 registerCommand({
-  name: 'pair', aliases: ['pairlink', 'linkwhatsapp'], category: 'system', description: 'Show the safe user WhatsApp linking portal',
+  name: 'pair',
+  aliases: ['pairlink', 'linkwhatsapp'],
+  category: 'system',
+  description: 'Generate a WhatsApp pairing code directly in private chat',
+  usage: 'pair <country-code-number>',
+  cooldown: 30,
   async run(ctx) {
-    const url = userLinkPortalUrl();
-    await ctx.reply([
-      ...rowBox('A-X-HK USER LINK PORTAL', [
-        `┃ 🔗 ${url}`,
-        `┃ ✅ User can link own WhatsApp only`,
-        `┃ 🔐 Owner/admin stays protected`
-      ], '🚀'),
-      '',
-      ...premiumFooterBlock()
-    ].join('\n'));
+    if (ctx.isGroup) return ctx.reply('For security, use this command in a private chat with the bot.');
+
+    const phone = String(ctx.args[0] || '').replace(/\D/g, '');
+    if (phone.length < 8 || phone.length > 15) {
+      return ctx.reply(`Usage: ${ctx.prefix}pair <country-code-number>\nExample: ${ctx.prefix}pair 923001234567`);
+    }
+
+    const sender = String(ctx.senderNumber || '').replace(/\D/g, '');
+    if (!ctx.isMasterOwnerAction && sender && phone !== sender) {
+      return ctx.reply('For security, you can only generate a pairing code for your own WhatsApp number.');
+    }
+
+    if (!config.multi.enabled) return ctx.reply('Multi-session pairing is currently disabled by the owner.');
+    if (!ctx.isMasterOwnerAction && (config.multi.accessCode || db.data.sessionPolicy?.inviteOnly)) {
+      return ctx.reply('Direct pairing is currently restricted by the owner.');
+    }
+
+    try {
+      let sessionId = existingLinkedSessionId(phone);
+      let inst = sessionId ? await waManager.ensurePublicSession(sessionId) : null;
+
+      if (inst?.snapshot?.().connected) {
+        return ctx.reply('This WhatsApp number is already connected to A-X-HK.');
+      }
+
+      if (!sessionId) {
+        const created = await waManager.createPublicSession({
+          phone,
+          label: `A-X-HK ${phone.slice(-4)}`
+        });
+        sessionId = created.id;
+        inst = waManager.getInstance(sessionId);
+      }
+
+      const code = await waManager.requestPairingCode(phone, sessionId);
+      const formatted = formatDirectPairCode(code);
+
+      await ctx.reply([
+        '╭━━━〔 🔗 A_X_HK PAIR CODE 〕━━━╮',
+        `┃ Number : +${phone}`,
+        `┃ Code   : *${formatted}*`,
+        `┃ Session: ${sessionId}`,
+        '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯',
+        '',
+        'WhatsApp → Linked devices → Link a device → Link with phone number instead',
+        `Enter: *${formatted}*`,
+        '',
+        'This code is temporary. Do not share it with anyone.'
+      ].join('\n'));
+    } catch (err) {
+      await ctx.reply(`Pairing failed: ${String(err?.message || err).slice(0, 300)}`);
+    }
   }
 });
 registerCommand({ name: 'minisite', category: 'system', description: 'Show configured mini-site URL', async run(ctx) { await ctx.reply([...rowBox('MINI SITE', [`┃ 🔗 ${config.miniSiteUrl || 'Not configured yet'}`], '🌐'), '', ...premiumFooterBlock()].join('\n')); } });
