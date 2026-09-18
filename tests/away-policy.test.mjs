@@ -67,14 +67,14 @@ test('scheduled auto reply still runs for non-text messages', () => {
   assert.match(patched, /if \(!ctx\.text\) \{\n    await maybeDirectAutomation\(ctx\);\n    return;\n  \}/);
 });
 
-test('session away policy stays enabled while AFK remains disabled', () => {
+test('session scheduled-reply toggle stays independent while AFK remains disabled', () => {
   const patched = enforceAwayPolicy({
     away: { enabled: false, text: 'I am currently away. I will reply when I am available.' },
     awayCooldownHours: 1,
     afk: { enabled: true, reason: 'old afk' }
   });
 
-  assert.equal(patched.away.enabled, true);
+  assert.equal(patched.away.enabled, false);
   assert.equal(patched.awayCooldownHours, DEFAULT_AWAY_COOLDOWN_HOURS);
   assert.equal(patched.afk.enabled, false);
   assert.equal(patched.afk.reason, '');
@@ -100,6 +100,7 @@ test('reply policy allows unavailable time only and group mentions only', () => 
   assert.equal(shouldSendAwayReply({ now: officeNow, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), true);
   assert.equal(shouldSendAwayReply({ now: sleepNow, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), true);
   assert.equal(shouldSendAwayReply({ now: availableNow, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), false);
+  assert.equal(shouldSendAwayReply({ now: officeNow, away: { enabled: false }, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), false);
   assert.equal(shouldSendAwayReply({ now: officeNow, ownerLastActiveAt: officeNow - 60_000, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), false);
   assert.equal(shouldSendAwayReply({ isGroup: true, wasMentioned: false, now: officeNow, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), false);
   assert.equal(shouldSendAwayReply({ isGroup: true, wasMentioned: true, now: officeNow, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), true);
