@@ -1,5 +1,7 @@
 import { registerCommand } from '../../lib/core/registry.js';
 import { askAI } from '../../lib/services/ai.js';
+import { getCommand } from '../../lib/core/registry.js';
+import { botKnowledgePrompt } from '../../lib/core/bot-knowledge.js';
 
 function personaPrompt(value = 'default') {
   const map = {
@@ -13,6 +15,12 @@ function personaPrompt(value = 'default') {
   return map[String(value || 'default').toLowerCase()] || map.default;
 }
 
+function needsBotKnowledge(text = '') {
+  const value = String(text || '').toLowerCase();
+  if (/\b(bot|command|commands|feature|features|menu|alias|aliases|usage|available)\b/.test(value) || /\.[a-z0-9_-]+/.test(value)) return true;
+  return value.split(/\s+/).some((word) => getCommand(word.replace(/^\./, '')));
+}
+
 function aiOptions(ctx, extra = {}) {
   return {
     systemPrompt: `You are A-X-HK, a helpful WhatsApp assistant. ${personaPrompt(ctx.sessionSettings.aiPersona)}`,
@@ -22,10 +30,13 @@ function aiOptions(ctx, extra = {}) {
 }
 
 registerCommand({
-  name: 'ai', aliases: ['ask', 'askai', 'chatgpt', 'gpt', 'gpt35', 'gpt4', 'gpt4o', 'gemini', 'geminipro', 'grok', 'deepseek', 'llama', 'llama3', 'mistral', 'perplex', 'brain', 'think'], category: 'ai', description: 'Ask the configured AI assistant', cooldown: 5,
+  name: 'ai', aliases: ['ask', 'askai', 'chatgpt', 'gpt', 'gpt35', 'gpt4', 'gpt4o', 'gemini', 'geminipro', 'grok', 'deepseek', 'llama', 'llama3', 'mistral', 'perplex', 'brain', 'think'], category: 'ai', description: 'Ask AI general questions or ask about this bot commands/features', cooldown: 5,
   async run(ctx) {
     if (!ctx.argText || ctx.argText.length > 6000) return ctx.reply(`Usage: ${ctx.prefix}ai your question`);
-    const result = await askAI(ctx.argText, ctx.senderNumber, aiOptions(ctx));
+    const prompt = needsBotKnowledge(ctx.argText)
+      ? [botKnowledgePrompt(ctx.argText), '', 'USER QUESTION:', ctx.argText].join('\n')
+      : ctx.argText;
+    const result = await askAI(prompt, ctx.senderNumber, aiOptions(ctx));
     await ctx.reply(result);
   }
 });
