@@ -74,18 +74,18 @@ test('normalizeAwayText always returns selected mobile-safe text', () => {
   assert.equal(normalizeAwayText('I am currently away. I will reply when I am available.'), AUTO_REPLY_TEXT);
 });
 
-test('selected auto reply text stays short enough for mobile bubbles', () => {
+test('selected auto reply text is premium and stays mobile-safe', () => {
   const lines = AUTO_REPLY_TEXT.split('\n').filter(Boolean);
   assert.deepEqual(lines, [
-    '╭─〔 A-X-HK REPLY 〕─╮',
-    '┃ Thanks for msg.',
-    '┃ Owner is busy now.',
-    '┃ Msg received.',
-    '┃ Reply soon.',
-    '╰──────────────╯',
-    '© A-X-HK'
+    '╭─〔 ⚡ 𝐀_𝐗_𝐇𝐊 𝐑𝐄𝐏𝐋𝐘 〕─╮',
+    '┃ Thank you for your message.',
+    '┃ Owner is busy right now.',
+    '┃ Your message is received.',
+    '┃ He will reply soon.',
+    '╰──────────────────╯',
+    '© 𝐏𝐎𝐖𝐄𝐑𝐄𝐃 𝐁𝐘 𝐀_𝐗_𝐇𝐊'
   ]);
-  assert.ok(lines.every((line) => line.length <= 24));
+  assert.ok(lines.every((line) => Array.from(line).length <= 34));
 });
 
 test('session away policy provides mobile-safe selected default text', () => {
