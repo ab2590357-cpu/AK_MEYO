@@ -9,10 +9,11 @@ registerCommand({
   name: 'timereply',
   aliases: ['time-reply', 'scheduledreply', 'fixedreply'],
   category: 'settings',
-  description: 'Toggle fixed office and sleep schedule replies',
+  description: 'Master-owner control for fixed office and sleep replies',
   ownerOnly: true,
   usage: 'timereply on|off|status',
   async run(ctx) {
+    if (ctx.sessionId !== 'main' || !ctx.isMasterOwnerAction) return;
     const action = String(ctx.args[0] || 'status').toLowerCase();
     if (!['on', 'off', 'status', 'check'].includes(action)) {
       return ctx.reply(`Usage: ${ctx.prefix}timereply on|off|status`);
@@ -41,7 +42,7 @@ registerCommand({
       `┃ Auto AI: ${stateLabel(aiEnabled)} (independent)`,
       '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯',
       '',
-      'This fixed schedule reply can be ON or OFF separately from Auto AI.',
+      'Master owner / main session only. This fixed schedule reply can be ON or OFF separately from Auto AI.',
       '',
       '★ 𝐏𝐎𝐖𝐄𝐑𝐄𝐃 𝐁𝐘 𝐀𝐁𝐃𝐔𝐋𝐋𝐀𝐇_𝐗_𝐇𝐊 ★'
     ].join('\n'));
