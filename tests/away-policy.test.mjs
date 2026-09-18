@@ -39,8 +39,8 @@ test('dispatcher patch upgrades scheduled replies into timed AI-aware flow', () 
 
   assert.match(patched, /activeReplySlot/);
   assert.match(patched, /ctx\.sessionSettings\.autoAI/);
-  assert.match(patched, /You are Abdullah\\'s official AI assistant on WhatsApp/);
-  assert.match(patched, /falling back to scheduled reply/);
+  assert.match(patched, /Auto AI is completely independent from the scheduled reply/);
+  assert.match(patched, /Auto AI reply failed/);
   assert.doesNotMatch(patched, /AFK|afk\?\.enabled|ctx\.sessionSettings\.afk/);
   assert.doesNotMatch(patched, /30 \* 60 \* 1000/);
 });
