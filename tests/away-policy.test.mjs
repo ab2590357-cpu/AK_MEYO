@@ -86,10 +86,10 @@ test('time slots return office, sleep, and available states', () => {
   assert.equal(activeReplySlot(availableNow, 'Asia/Karachi'), null);
 });
 
-test('office and sleep text identify Abdullah AI assistant', () => {
+test('office and sleep text are clearly labeled fixed schedule replies', () => {
   assert.match(AUTO_REPLY_TEXT, /Abdullah|office/i);
-  assert.match(normalizeAwayText('', officeNow, 'Asia/Karachi'), /I’m Abdullah’s AI assistant/);
-  assert.match(normalizeAwayText('', sleepNow, 'Asia/Karachi'), /I’m Abdullah’s AI assistant/);
+  assert.match(normalizeAwayText('', officeNow, 'Asia/Karachi'), /Automated schedule reply/);
+  assert.match(normalizeAwayText('', sleepNow, 'Asia/Karachi'), /Automated schedule reply/);
   assert.match(normalizeAwayText('', officeNow, 'Asia/Karachi'), /𝐏𝐎𝐖𝐄𝐑𝐄𝐃 𝐁𝐘 𝐀𝐁𝐃𝐔𝐋𝐋𝐀𝐇_𝐗_𝐇𝐊/);
   assert.equal(normalizeAwayText('', availableNow, 'Asia/Karachi'), '');
 });
