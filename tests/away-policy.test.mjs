@@ -2,38 +2,45 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { patchDispatcherSource } from '../scripts/apply-away-policy.mjs';
 import { enforceAwayPolicy } from '../lib/core/database.js';
+import { AUTO_REPLY_TEXT, shouldSendAwayReply } from '../lib/core/auto-reply-policy.js';
 
-test('away auto reply ignores AFK and uses a four hour cooldown', () => {
-  const legacy = [
+test('dispatcher away policy validates helper-based owner activity suppression', () => {
+  const source = [
+    "import { AUTO_REPLY_TEXT, awayCooldownMs, normalizeAwayText, shouldSendAwayReply } from './auto-reply-policy.js';",
+    'const ownerActivityAt = new Map();',
+    'function rememberOwnerActivity(ctx) { ownerActivityAt.set(`${ctx.sessionId}:${ctx.chat}`, Date.now()); }',
     'async function maybeDirectAutomation(ctx) {',
-    '  const key = `${ctx.sessionId}:${ctx.chat}`;',
-    '  const now = Date.now();',
-    '  const last = autoReplyAt.get(key) || 0;',
-    '  const afk = ctx.sessionSettings.afk;',
     '  const away = ctx.sessionSettings.away;',
-    '',
-    '  if (!ctx.isGroup && (afk?.enabled || away?.enabled) && now - last > 30 * 60 * 1000) {',
-    '    autoReplyAt.set(key, now);',
-    '    const text = afk?.enabled',
-    "      ? `💤 AFK • ${afk.reason || 'Away for a while'}`",
-    "      : `📨 ${away.text || 'I am currently away.'}`;",
-    '    await ctx.reply(`${text}\\n\\n${config.footerMessage}`);',
-    '    return true;',
+    '  if (shouldSendAwayReply({ ownerLastActiveAt: ownerActivityAt.get(key) || 0 })) {',
+    '    const text = normalizeAwayText(away?.text) || AUTO_REPLY_TEXT;',
     '  }',
+    '}',
+    'export async function dispatchMessage(sock, msg, runtime = {}) {',
+    '  applyAutoFeatures(ctx, sock, msg);',
+    '  if (!ctx.text) return;',
+    '',
+    '  if (await moderation(ctx)) return;',
+    '  rememberOwnerActivity(ctx);',
     '}'
   ].join('\n');
 
-  const patched = patchDispatcherSource(legacy);
+  const patched = patchDispatcherSource(source);
 
-  assert.match(patched, /away\?\.enabled/);
-  assert.match(patched, /awayCooldownHours \|\| 4/);
+  assert.match(patched, /shouldSendAwayReply/);
+  assert.match(patched, /ownerActivityAt/);
+  assert.match(patched, /rememberOwnerActivity\(ctx\)/);
   assert.doesNotMatch(patched, /AFK|afk\?\.enabled|ctx\.sessionSettings\.afk/);
   assert.doesNotMatch(patched, /30 \* 60 \* 1000/);
 });
 
-test('away auto reply still runs for non-text private messages', () => {
+test('away auto reply still runs for non-text messages', () => {
   const source = [
+    "import { shouldSendAwayReply } from './auto-reply-policy.js';",
+    'const ownerActivityAt = new Map();',
+    'function rememberOwnerActivity(ctx) { ownerActivityAt.set(`${ctx.sessionId}:${ctx.chat}`, Date.now()); }',
+    'function maybeDirectAutomation(ctx) { const text = normalizeAwayText(away?.text); shouldSendAwayReply({}); }',
     'export async function dispatchMessage(sock, msg, runtime = {}) {',
+    '  rememberOwnerActivity(ctx);',
     '  applyAutoFeatures(ctx, sock, msg);',
     '  if (!ctx.text) return;',
     '',
@@ -61,11 +68,22 @@ test('session away policy forces auto response on and AFK off', () => {
   assert.equal(patched.afk.reason, '');
 });
 
-test('session away policy provides default text when saved text is blank', () => {
+test('session away policy provides mobile-safe selected default text', () => {
   const patched = enforceAwayPolicy({ away: { enabled: false, text: '' }, afk: { enabled: true, reason: 'old' } });
 
   assert.equal(patched.away.enabled, true);
-  assert.equal(patched.away.text, 'I am currently busy. I will reply as soon as I am available.');
+  assert.equal(patched.away.text, AUTO_REPLY_TEXT);
   assert.equal(patched.awayCooldownHours, 4);
   assert.equal(patched.afk.enabled, false);
+});
+
+test('away reply policy blocks repeats while owner is active and allows group mentions only', () => {
+  const now = 10_000_000;
+  const fourHours = 4 * 60 * 60 * 1000;
+  const away = { enabled: true, text: AUTO_REPLY_TEXT };
+
+  assert.equal(shouldSendAwayReply({ away, now, cooldownMs: fourHours }), true);
+  assert.equal(shouldSendAwayReply({ away, now, ownerLastActiveAt: now - 60_000, cooldownMs: fourHours }), false);
+  assert.equal(shouldSendAwayReply({ away, isGroup: true, wasMentioned: false, now, cooldownMs: fourHours }), false);
+  assert.equal(shouldSendAwayReply({ away, isGroup: true, wasMentioned: true, now, cooldownMs: fourHours }), true);
 });
