@@ -12,7 +12,7 @@ const officeNow = new Date('2026-01-01T16:30:00Z').getTime(); // 9:30 PM Asia/Ka
 const sleepNow = new Date('2026-01-01T05:30:00Z').getTime(); // 10:30 AM Asia/Karachi
 const availableNow = new Date('2026-01-01T12:30:00Z').getTime(); // 5:30 PM Asia/Karachi
 
-assert.equal(awayCooldownMs({}), 20 * MINUTE);
+assert.equal(awayCooldownMs({}), 5 * MINUTE);
 assert.equal(awayCooldownMs({ awayCooldownMinutes: 15 }), 15 * MINUTE);
 assert.equal(awayCooldownMs({ awayCooldownHours: 4 }), 60 * MINUTE);
 
