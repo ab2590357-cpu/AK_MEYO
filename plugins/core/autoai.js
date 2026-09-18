@@ -18,6 +18,7 @@ registerCommand({
   category: 'settings',
   description: 'Master-owner control for A_X_HK AI assistant',
   ownerOnly: true,
+  masterOnly: true,
   usage: 'autoai on|off|status',
   async run(ctx) {
     if (ctx.sessionId !== 'main' || !ctx.isMasterOwnerAction) return;
