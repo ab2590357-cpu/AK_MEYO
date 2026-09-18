@@ -40,7 +40,7 @@ registerCommand({
       `┃ Status : ${stateLabel(enabled)}`,
       '┃ Scope  : Unavailable hours only',
       '┃ Office : 9:00 PM – 8:00 AM',
-      '┃ Sleep  : 10:00 AM – 5:00 PM',
+      '┃ Sleep  : 10:00 AM – 4:00 PM',
       '┃ Group  : Mention only, reply stays in group',
       `┃ ${aiEngineLabel()}`,
       '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯',
