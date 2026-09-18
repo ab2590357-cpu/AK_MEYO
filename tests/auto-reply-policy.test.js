@@ -26,6 +26,7 @@ assert.equal(normalizeAwayText('', availableNow, 'Asia/Karachi'), '');
 assert.match(AUTO_REPLY_TEXT, /Abdullah.*office|office/i);
 
 assert.equal(shouldSendAwayReply({ now: officeNow, timezone: 'Asia/Karachi' }), true, 'office time private chat should receive reply');
+assert.equal(shouldSendAwayReply({ now: officeNow, away: { enabled: false }, timezone: 'Asia/Karachi' }), false, 'time reply OFF should stay silent');
 assert.equal(
   shouldSendAwayReply({ now: officeNow, lastReplyAt: officeNow - (20 * MINUTE) + 1, cooldownMs: 20 * MINUTE, timezone: 'Asia/Karachi' }),
   false,
