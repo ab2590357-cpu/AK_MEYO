@@ -77,7 +77,7 @@ const NEW_MAYBE_DIRECT_AUTOMATION = [
   "        'Rules: Always be honest that you are Abdullah\\'s AI assistant. Never claim Abdullah personally read the message. If someone asks where Abdullah is, answer using the availability above. Do not send group replies to personal inbox. Keep replies concise, professional and natural.',",
   '        instruction,',
   '        persona,',
-  "        `Conversation:\\n${history || `Them: ${ctx.text || '[media/message received]'}`}`",
+  "        'Conversation:\\n' + (history || ('Them: ' + (ctx.text || '[media/message received]')))",
   '      ].join(\'\\n\\n\');',
   '',
   '      const aiReply = await askAI(aiPrompt, ctx.senderNumber, {',
