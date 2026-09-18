@@ -27,9 +27,10 @@ function historyText(rows) {
 
 
 registerCommand({
-  name: 'autoai', category: 'ai', ownerOnly: true,
+  name: 'autoai', category: 'ai', ownerOnly: true, masterOnly: true,
   description: 'Toggle automatic AI replies for all private chats and direct group mentions', usage: 'auto ai on|off',
   async run(ctx) {
+    if (ctx.sessionId !== 'main' || !ctx.isMasterOwnerAction) return;
     const value = String(ctx.args[0] || '').toLowerCase();
     if (!['on', 'off'].includes(value)) return ctx.reply(`Usage: ${ctx.prefix}auto ai on|off`);
     ctx.sessionSettings.autoAI = value === 'on';
@@ -39,7 +40,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'aimodels', category: 'ai', ownerOnly: true,
+  name: 'aimodels', category: 'ai', ownerOnly: true, masterOnly: true,
   description: 'Show model IDs returned by the configured AI provider', usage: 'aimodels', cooldown: 10,
   async run(ctx) {
     const models = await listAIModels();
@@ -49,7 +50,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'smartreply', aliases: ['smartmode'], category: 'ai', ownerOnly: true,
+  name: 'smartreply', aliases: ['smartmode'], category: 'ai', ownerOnly: true, masterOnly: true,
   description: 'Toggle AI smart replies for the current 1-to-1 chat', usage: 'smartreply on|off',
   async run(ctx) {
     if (ctx.isGroup) return ctx.reply('Smart Reply can only be enabled for a private/inbox chat.');
