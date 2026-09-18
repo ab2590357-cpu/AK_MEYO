@@ -25,16 +25,18 @@ const safeText = (value = '', max = 3000) => String(value || '').replace(/\0/g, 
 const ownerGuard = (ctx) => ctx.sessionId === 'main' && ctx.isMasterOwnerAction;
 
 function registerPersonalCommand(definition) {
-  const original = String(definition?.name || '').toLowerCase().replace(/^ax/, '');
-  let name = ('ax' + original).slice(0, 48);
+  const original = String(definition?.name || '').toLowerCase();
+  let name = original;
+  if (getCommand(name)) name = ('ax' + original).slice(0, 48);
   let suffix = 2;
   while (getCommand(name)) {
     name = ('ax' + original + suffix).slice(0, 48);
     suffix += 1;
   }
-  // Personal-pack commands keep an A-X-HK-specific namespace so they can never
-  // shadow core/community commands that may load later.
-  return registerCommand({ ...definition, name, aliases: [] });
+  const aliases = (Array.isArray(definition?.aliases) ? definition.aliases : [])
+    .map((value) => String(value || '').toLowerCase())
+    .filter((value) => value && value !== name && !getCommand(value));
+  return registerCommand({ ...definition, name, aliases });
 }
 const xmlEscape = (value = '') => String(value || '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
