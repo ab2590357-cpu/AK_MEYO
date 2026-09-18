@@ -7,7 +7,7 @@ function stateLabel(value) {
 
 registerCommand({
   name: 'timereply',
-  aliases: ['time-reply', 'autoreply', 'scheduledreply', 'fixedreply'],
+  aliases: ['time-reply', 'scheduledreply', 'fixedreply'],
   category: 'settings',
   description: 'Toggle fixed office and sleep schedule replies',
   ownerOnly: true,
