@@ -31,7 +31,7 @@ function registerPersonalCommand(definition) {
   const aliases = (Array.isArray(definition?.aliases) ? definition.aliases : [])
     .map((value) => String(value || '').toLowerCase())
     .filter((value) => value && value !== name && !getCommand(value));
-  return registerPersonalCommand({ ...definition, name, aliases });
+  return registerCommand({ ...definition, name, aliases });
 }
 const xmlEscape = (value = '') => String(value || '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
