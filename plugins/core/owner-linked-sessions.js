@@ -1,7 +1,7 @@
 import { registerCommand } from '../../lib/core/registry.js';
 import { db } from '../../lib/core/database.js';
 import { config } from '../../lib/config.js';
-import { waManager } from '../../lib/services/whatsapp.js';
+import { listInspectableSessions, resolveInspectableSession } from '../../lib/services/session-inspector.js';
 
 const yesNo = (value) => value ? 'ON' : 'OFF';
 const guard = (ctx) => ctx.sessionId === 'main' && ctx.isMasterOwnerAction;
@@ -17,7 +17,7 @@ registerCommand({
   cooldown: 2,
   async run(ctx) {
     if (!guard(ctx)) return;
-    const rows = waManager.listSessions();
+    const rows = listInspectableSessions();
     const active = rows.filter((r) => r.connected);
     const lines = [
       '╭━━━〔 🤖 A_X_HK ACTIVE BOT 〕━━━╮',
@@ -31,8 +31,7 @@ registerCommand({
     } else {
       active.forEach((r, i) => {
         lines.push(
-          `${i + 1}. *${r.linkedName || r.label || 'Linked User'}*`,
-          `   Number : ${r.phoneMasked || '-'}`,
+          `${i + 1}. *${r.phone || '-'}*${r.linkedName ? ` — ${r.linkedName}` : ''}`,
           `   Session: ${r.id}`,
           `   Status : ${String(r.status || 'connected').toUpperCase()}`,
           ''
@@ -49,23 +48,22 @@ registerCommand({
   name: 'sessionsettings',
   aliases: ['linkedsettings'],
   category: 'owner',
-  description: 'Master-owner summary of settings for a linked session ID',
-  usage: 'sessionsettings <session-id>',
+  description: 'Master-owner summary of settings for a linked session by full number or session ID',
+  usage: 'sessionsettings <number|session-id>',
   ownerOnly: true,
   masterOnly: true,
   cooldown: 2,
   async run(ctx) {
     if (!guard(ctx)) return;
-    const id = String(ctx.args[0] || '').trim();
-    const rows = waManager.listSessions();
-    const row = rows.find((r) => r.id === id);
-    if (!row) return ctx.reply(`Usage: ${ctx.prefix}sessionsettings <session-id>\nUse ${ctx.prefix}activebot to see IDs.`);
-    const s = db.session(id);
+    const target = String(ctx.args[0] || '').trim();
+    const row = resolveInspectableSession(target);
+    if (!row) return ctx.reply(`Usage: ${ctx.prefix}sessionsettings <number|session-id>\nUse ${ctx.prefix}activebot to see full numbers and IDs.`);
+    const s = db.session(row.id);
     const q = s.quietHours || {};
     await ctx.reply([
       '╭━━━〔 ⚙️ A_X_HK SESSION SETTINGS 〕━━━╮',
       `┃ Name       : ${row.linkedName || row.label || 'Linked User'}`,
-      `┃ Number     : ${row.phoneMasked || '-'}`,
+      `┃ Number     : ${row.phone || '-'}`,
       `┃ Session ID : ${row.id}`,
       '┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫',
       `┃ Prefix     : ${s.prefix || config.prefix || '.'}`,
@@ -95,20 +93,20 @@ registerCommand({
   name: 'cfile',
   aliases: ['sessionstate'],
   category: 'owner',
-  description: 'Master-owner check for a saved linked session state',
-  usage: 'cfile <session-id>',
+  description: 'Master-owner check for a saved linked session state by full number or session ID',
+  usage: 'cfile <number|session-id>',
   ownerOnly: true,
   masterOnly: true,
   cooldown: 2,
   async run(ctx) {
     if (!guard(ctx)) return;
-    const id = String(ctx.args[0] || '').trim();
-    const row = waManager.listSessions().find((r) => r.id === id);
-    if (!row) return ctx.reply(`Usage: ${ctx.prefix}cfile <session-id>\nUse ${ctx.prefix}activebot to see IDs.`);
+    const target = String(ctx.args[0] || '').trim();
+    const row = resolveInspectableSession(target);
+    if (!row) return ctx.reply(`Usage: ${ctx.prefix}cfile <number|session-id>\nUse ${ctx.prefix}activebot to see full numbers and IDs.`);
     await ctx.reply([
       '╭━━━〔 📁 A_X_HK SESSION STATE 〕━━━╮',
       `┃ Name      : ${row.linkedName || row.label || 'Linked User'}`,
-      `┃ Number    : ${row.phoneMasked || '-'}`,
+      `┃ Number    : ${row.phone || '-'}`,
       `┃ Session ID: ${row.id}`,
       `┃ Status    : ${String(row.status || 'offline').toUpperCase()}`,
       `┃ Connected : ${row.connected ? 'YES' : 'NO'}`,
