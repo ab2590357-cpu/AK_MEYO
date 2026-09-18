@@ -1,37 +1,55 @@
 import assert from 'node:assert/strict';
 import {
   AUTO_REPLY_TEXT,
+  activeReplySlot,
   awayCooldownMs,
   normalizeAwayText,
   shouldSendAwayReply
 } from '../lib/core/auto-reply-policy.js';
 
-const FOUR_HOURS = 4 * 60 * 60 * 1000;
-const now = 1_000_000_000;
-const away = { enabled: true, text: AUTO_REPLY_TEXT };
+const MINUTE = 60 * 1000;
+const officeNow = new Date('2026-01-01T16:30:00Z').getTime(); // 9:30 PM Asia/Karachi
+const sleepNow = new Date('2026-01-01T05:30:00Z').getTime(); // 10:30 AM Asia/Karachi
+const availableNow = new Date('2026-01-01T12:30:00Z').getTime(); // 5:30 PM Asia/Karachi
 
-assert.equal(awayCooldownMs({ awayCooldownHours: 4 }), FOUR_HOURS);
-assert.equal(normalizeAwayText('I am currently busy. I will reply as soon as I am available.'), AUTO_REPLY_TEXT);
-assert.equal(shouldSendAwayReply({ away, now }), true, 'new private chat should receive away reply');
+assert.equal(awayCooldownMs({}), 20 * MINUTE);
+assert.equal(awayCooldownMs({ awayCooldownMinutes: 15 }), 15 * MINUTE);
+assert.equal(awayCooldownMs({ awayCooldownHours: 4 }), 60 * MINUTE);
+
+assert.equal(activeReplySlot(officeNow, 'Asia/Karachi')?.key, 'office');
+assert.equal(activeReplySlot(sleepNow, 'Asia/Karachi')?.key, 'sleep');
+assert.equal(activeReplySlot(availableNow, 'Asia/Karachi'), null);
+
+assert.match(normalizeAwayText('', officeNow, 'Asia/Karachi'), /Office Time: 9:00 PM/);
+assert.match(normalizeAwayText('', sleepNow, 'Asia/Karachi'), /Sleep Time: 10:00 AM/);
+assert.equal(normalizeAwayText('', availableNow, 'Asia/Karachi'), '');
+assert.match(AUTO_REPLY_TEXT, /Abdullah.*office|office/i);
+
+assert.equal(shouldSendAwayReply({ now: officeNow, timezone: 'Asia/Karachi' }), true, 'office time private chat should receive reply');
 assert.equal(
-  shouldSendAwayReply({ away, now, lastReplyAt: now - FOUR_HOURS + 1, cooldownMs: FOUR_HOURS }),
+  shouldSendAwayReply({ now: officeNow, lastReplyAt: officeNow - (20 * MINUTE) + 1, cooldownMs: 20 * MINUTE, timezone: 'Asia/Karachi' }),
   false,
   'same chat should not repeat before cooldown'
 );
 assert.equal(
-  shouldSendAwayReply({ away, now, ownerLastActiveAt: now - 60_000, cooldownMs: FOUR_HOURS }),
+  shouldSendAwayReply({ now: officeNow, ownerLastActiveAt: officeNow - 60_000, cooldownMs: 20 * MINUTE, timezone: 'Asia/Karachi' }),
   false,
-  'active owner conversation should suppress away reply'
+  'active owner conversation should suppress scheduled reply'
 );
 assert.equal(
-  shouldSendAwayReply({ away, isGroup: true, wasMentioned: false, now }),
+  shouldSendAwayReply({ isGroup: true, wasMentioned: false, now: officeNow, timezone: 'Asia/Karachi' }),
   false,
-  'group messages without mention should not receive away reply'
+  'group messages without mention should not receive reply'
 );
 assert.equal(
-  shouldSendAwayReply({ away, isGroup: true, wasMentioned: true, now }),
+  shouldSendAwayReply({ isGroup: true, wasMentioned: true, now: officeNow, timezone: 'Asia/Karachi' }),
   true,
-  'group mention should receive away reply in the same group chat'
+  'group mention should receive reply in the same group chat'
+);
+assert.equal(
+  shouldSendAwayReply({ now: availableNow, timezone: 'Asia/Karachi' }),
+  false,
+  'available time should not receive scheduled reply'
 );
 
 console.log('auto-reply policy tests passed');
