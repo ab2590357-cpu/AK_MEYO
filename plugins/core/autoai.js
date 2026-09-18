@@ -16,7 +16,7 @@ registerCommand({
   name: 'autoai',
   aliases: ['auto-ai', 'assistant', 'aiassistant', 'botai'],
   category: 'settings',
-  description: 'Toggle Abdullah AI assistant for unavailable hours',
+  description: 'Toggle A_X_HK AI assistant for all incoming messages',
   ownerOnly: true,
   usage: 'autoai on|off|status',
   async run(ctx) {
@@ -29,23 +29,25 @@ registerCommand({
       ctx.sessionSettings.autoAI = action === 'on';
       if (ctx.sessionSettings.autoAI) {
         ctx.sessionSettings.aiPersona ||= 'professional';
-        ctx.sessionSettings.aiCooldownSeconds = Math.max(10, Math.min(180, Number(ctx.sessionSettings.aiCooldownSeconds || 20)));
+        ctx.sessionSettings.aiCooldownSeconds = 0;
       }
       await db.save();
     }
 
     const enabled = Boolean(ctx.sessionSettings.autoAI);
     await ctx.reply([
-      '╭━━━〔 🤖 𝐀𝐁𝐃𝐔𝐋𝐋𝐀𝐇 𝐀𝐈 𝐀𝐒𝐒𝐈𝐒𝐓𝐀𝐍𝐓 〕━━━╮',
+      '╭━━━〔 🤖 𝐀_𝐗_𝐇𝐊 𝐀𝐔𝐓𝐎 𝐀𝐈 〕━━━╮',
       `┃ Status : ${stateLabel(enabled)}`,
-      '┃ Scope  : Unavailable hours only',
+      '┃ Private: Every incoming message',
+      '┃ Group  : Mention only, reply stays in group',
+      '┃ Time   : Pakistan / Asia-Karachi aware',
       '┃ Office : 9:00 PM – 8:00 AM',
       '┃ Sleep  : 10:00 AM – 4:00 PM',
-      '┃ Group  : Mention only, reply stays in group',
+      '┃ Free   : 8–10 AM and 4–9 PM',
       `┃ ${aiEngineLabel()}`,
       '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯',
       '',
-      'Fixed office/sleep auto reply stays ON even when Auto AI is OFF.',
+      'Auto AI is independent from the fixed Time Reply feature.',
       '',
       '★ 𝐏𝐎𝐖𝐄𝐑𝐄𝐃 𝐁𝐘 𝐀𝐁𝐃𝐔𝐋𝐋𝐀𝐇_𝐗_𝐇𝐊 ★'
     ].join('\n'));
