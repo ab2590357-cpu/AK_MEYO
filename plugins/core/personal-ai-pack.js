@@ -313,7 +313,7 @@ registerPersonalCommand({
 
 registerPersonalCommand({
   name: 'chatbrief',
-  aliases: ['summary', 'chatsummary'],
+  aliases: ['briefchat'],
   category: 'ai',
   description: 'Summarize the recent chat with decisions and pending points',
   usage: 'chatbrief',
@@ -966,7 +966,7 @@ registerPersonalCommand({
 
 registerPersonalCommand({
   name: 'videogif',
-  aliases: ['togif'],
+  aliases: ['makevideogif'],
   category: 'media',
   description: 'Convert a short quoted video to GIF',
   usage: 'videogif [seconds max 12]',
