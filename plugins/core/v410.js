@@ -45,7 +45,7 @@ function quotedVideo(ctx) {
 }
 
 registerCommand({
-  name: 'aistatus', aliases: ['aistats'], category: 'ai', ownerOnly: true,
+  name: 'aistatus', aliases: ['aistats'], category: 'ai', ownerOnly: true, masterOnly: true,
   description: 'Show AI provider health, latency, retries and last result without exposing the API key',
   async run(ctx) {
     const s = getAIStatus();
@@ -74,7 +74,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'aitest', aliases: ['testai'], category: 'ai', ownerOnly: true, cooldown: 10,
+  name: 'aitest', aliases: ['testai'], category: 'ai', ownerOnly: true, masterOnly: true, cooldown: 10,
   description: 'Send one controlled AI health test and report response latency', usage: 'aitest [optional prompt]',
   async run(ctx) {
     const prompt = String(ctx.argText || '').trim().slice(0, 400) || 'Reply with exactly: A-X-HK AI OK';
@@ -84,7 +84,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'aipersona', aliases: ['personalityai'], category: 'ai', ownerOnly: true,
+  name: 'aipersona', aliases: ['personalityai'], category: 'ai', ownerOnly: true, masterOnly: true,
   description: 'Choose the AI reply style for this linked session', usage: 'aipersona default|professional|friendly|short|urdu|roman',
   async run(ctx) {
     const value = String(ctx.args[0] || '').toLowerCase();
@@ -98,7 +98,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'aicooldown', category: 'ai', ownerOnly: true,
+  name: 'aicooldown', category: 'ai', ownerOnly: true, masterOnly: true,
   description: 'Set minimum seconds between automatic AI replies per chat', usage: 'aicooldown 15',
   async run(ctx) {
     const seconds = Number(ctx.args[0]);
@@ -110,7 +110,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'aihistory', category: 'ai', ownerOnly: true,
+  name: 'aihistory', category: 'ai', ownerOnly: true, masterOnly: true,
   description: 'Set how many recent chat messages Auto AI may use as context', usage: 'aihistory 12',
   async run(ctx) {
     const count = Number(ctx.args[0]);
@@ -122,7 +122,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'aifallback', aliases: ['aifallbacks'], category: 'ai', ownerOnly: true,
+  name: 'aifallback', aliases: ['aifallbacks'], category: 'ai', ownerOnly: true, masterOnly: true,
   description: 'Set backup AI model IDs used when the primary model route is unavailable', usage: 'aifallback model-a,model-b | off',
   async run(ctx) {
     const raw = String(ctx.argText || '').trim();
@@ -144,7 +144,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'aireload', aliases: ['aireset'], category: 'ai', ownerOnly: true,
+  name: 'aireload', aliases: ['aireset'], category: 'ai', ownerOnly: true, masterOnly: true,
   description: 'Clear AI runtime health/model cache without exposing or changing the API key',
   async run(ctx) {
     resetAIState();
