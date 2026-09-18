@@ -10,7 +10,7 @@ import sharp from 'sharp';
 import ffmpegPath from 'ffmpeg-static';
 import { downloadMediaMessage } from '@whiskeysockets/baileys';
 import { Sticker, StickerTypes } from 'wa-sticker-formatter';
-import { registerCommand, commandsByCategory } from '../../lib/core/registry.js';
+import { registerCommand, getCommand, commandsByCategory } from '../../lib/core/registry.js';
 import { db } from '../../lib/core/database.js';
 import { config } from '../../lib/config.js';
 import { logger } from '../../lib/core/logger.js';
@@ -23,6 +23,16 @@ const execFileAsync = promisify(execFile);
 
 const safeText = (value = '', max = 3000) => String(value || '').replace(/\0/g, '').trim().slice(0, max);
 const ownerGuard = (ctx) => ctx.sessionId === 'main' && ctx.isMasterOwnerAction;
+
+function registerPersonalCommand(definition) {
+  const original = String(definition?.name || '').toLowerCase();
+  let name = original;
+  if (getCommand(name)) name = ('ax' + original).slice(0, 48);
+  const aliases = (Array.isArray(definition?.aliases) ? definition.aliases : [])
+    .map((value) => String(value || '').toLowerCase())
+    .filter((value) => value && value !== name && !getCommand(value));
+  return registerPersonalCommand({ ...definition, name, aliases });
+}
 const xmlEscape = (value = '') => String(value || '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
@@ -145,7 +155,7 @@ function commandReplyPrompt(style, input) {
 }
 
 function registerReplyCommand(name, style, aliases = []) {
-  registerCommand({
+  registerPersonalCommand({
     name,
     aliases,
     category: 'ai',
@@ -169,7 +179,7 @@ registerReplyCommand('funnyreply', 'funny', ['funny']);
 registerReplyCommand('savagereply', 'savage', ['savage']);
 registerReplyCommand('politereply', 'polite', ['polite']);
 
-registerCommand({
+registerPersonalCommand({
   name: 'mood',
   aliases: ['aimood'],
   category: 'ai',
@@ -198,7 +208,7 @@ function memoryBlocked(text = '') {
   return /\b(password|passcode|api[_ -]?key|secret[_ -]?key|access[_ -]?token|bearer|otp|one[- ]time|pin|cvv|card number|bank account|cnic)\b/i.test(text);
 }
 
-registerCommand({
+registerPersonalCommand({
   name: 'remember',
   aliases: ['savememory'],
   category: 'owner',
@@ -226,7 +236,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'recall',
   aliases: ['memory', 'memories'],
   category: 'owner',
@@ -247,7 +257,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'forget',
   aliases: ['delmemory'],
   category: 'owner',
@@ -267,7 +277,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'ask',
   aliases: ['askai', 'axask'],
   category: 'ai',
@@ -296,7 +306,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'chatbrief',
   aliases: ['summary', 'chatsummary'],
   category: 'ai',
@@ -321,7 +331,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'debate',
   aliases: ['twosides'],
   category: 'ai',
@@ -339,7 +349,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'argue',
   aliases: ['counterpoint'],
   category: 'ai',
@@ -368,7 +378,7 @@ async function creativeFromImageOrText(ctx, instruction, fallbackText = '') {
   }
 }
 
-registerCommand({
+registerPersonalCommand({
   name: 'captionai',
   aliases: ['caption'],
   category: 'ai',
@@ -384,7 +394,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'statuscaption',
   aliases: ['wacaption'],
   category: 'ai',
@@ -400,7 +410,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'bioai',
   aliases: ['biogen'],
   category: 'ai',
@@ -416,7 +426,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'usernameai',
   aliases: ['usernamegen'],
   category: 'ai',
@@ -432,7 +442,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'imagine',
   aliases: ['imageai', 'aipic'],
   category: 'ai',
@@ -454,7 +464,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'explain',
   aliases: ['screenshotai', 'imageexplain'],
   category: 'ai',
@@ -477,7 +487,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'voiceai',
   aliases: ['voicebrain'],
   category: 'ai',
@@ -502,7 +512,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'songfind',
   aliases: ['songid', 'findsong'],
   category: 'ai',
@@ -527,7 +537,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'stickerlab',
   aliases: ['makesticker'],
   category: 'media',
@@ -549,7 +559,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'circlepic',
   aliases: ['circleimage'],
   category: 'media',
@@ -572,7 +582,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'memeai',
   aliases: ['aimeme'],
   category: 'media',
@@ -605,7 +615,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'imgcompress',
   aliases: ['compressimg'],
   category: 'media',
@@ -623,7 +633,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'imgconvert',
   aliases: ['convertimg'],
   category: 'media',
@@ -648,7 +658,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'removebg',
   aliases: ['backgroundremove'],
   category: 'ai',
@@ -734,7 +744,7 @@ async function fetchPublicPage(raw) {
   throw new Error('Too many redirects.');
 }
 
-registerCommand({
+registerPersonalCommand({
   name: 'linksum',
   aliases: ['linkai', 'summarizelink'],
   category: 'ai',
@@ -762,7 +772,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'randomgame',
   aliases: ['pickgame'],
   category: 'games',
@@ -778,7 +788,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'dailydrop',
   aliases: ['randomdrop'],
   category: 'owner',
@@ -804,7 +814,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'commandai',
   aliases: ['botdo', 'suggestcmd'],
   category: 'ai',
@@ -834,7 +844,7 @@ registerCommand({
 });
 
 
-registerCommand({
+registerPersonalCommand({
   name: 'upscaleimg',
   aliases: ['imageupscale'],
   category: 'media',
@@ -862,7 +872,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'videoaudio',
   aliases: ['toaudio', 'videomp3'],
   category: 'media',
@@ -879,7 +889,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'videocompress',
   aliases: ['compressvideo'],
   category: 'media',
@@ -902,7 +912,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'trimvideo',
   aliases: ['videotrim'],
   category: 'media',
@@ -926,7 +936,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'audiocut',
   aliases: ['trimaudio'],
   category: 'media',
@@ -949,7 +959,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'videogif',
   aliases: ['togif'],
   category: 'media',
@@ -972,7 +982,7 @@ registerCommand({
   }
 });
 
-registerCommand({
+registerPersonalCommand({
   name: 'giftovideo',
   aliases: ['gifvideo'],
   category: 'media',
