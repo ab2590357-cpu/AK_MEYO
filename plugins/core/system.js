@@ -492,7 +492,8 @@ registerCommand({
       }
 
       const code = await waManager.requestPairingCode(phone, sessionId);
-      const formatted = formatDirectPairCode(code);
+      const copyCode = String(code || '').replace(/[^A-Z0-9]/gi, '').toUpperCase();
+      const formatted = formatDirectPairCode(copyCode);
 
       await ctx.reply([
         '╭━━━〔 🔗 A_X_HK PAIR CODE 〕━━━╮',
@@ -506,6 +507,9 @@ registerCommand({
         '',
         'This code is temporary. Do not share it with anyone.'
       ].join('\n'));
+
+      // Send the exact code again as a separate message so it can be copied instantly.
+      await ctx.reply(copyCode);
     } catch (err) {
       await ctx.reply(`Pairing failed: ${String(err?.message || err).slice(0, 300)}`);
     }
