@@ -3,10 +3,6 @@ import { db } from '../../lib/core/database.js';
 import { config } from '../../lib/config.js';
 import { recentImportantAlerts, clearImportantAlerts } from '../../lib/services/important-alerts.js';
 
-function stateLabel(value) {
-  return value ? 'ENABLED ✅' : 'DISABLED ⛔';
-}
-
 function formatWhen(at) {
   try {
     return new Date(Number(at || Date.now())).toLocaleString('en-PK', { timeZone: config.timezone || 'Asia/Karachi' });
@@ -19,40 +15,33 @@ registerCommand({
   name: 'alerts',
   aliases: ['importantalerts'],
   category: 'settings',
-  description: 'Master-owner control for smart important-message alerts',
+  description: 'Show always-on smart important-message alert status',
   ownerOnly: true,
-  usage: 'alerts on|off|status',
+  masterOnly: true,
+  usage: 'alerts',
   async run(ctx) {
     if (ctx.sessionId !== 'main' || !ctx.isMasterOwnerAction) return;
 
-    const action = String(ctx.args[0] || 'status').toLowerCase();
-    if (!['on', 'off', 'status', 'check'].includes(action)) {
-      return ctx.reply('Usage: ' + ctx.prefix + 'alerts on|off|status');
-    }
+    ctx.sessionSettings.importantAlerts = true;
+    ctx.sessionSettings.importantAlertCooldownMinutes = Math.max(
+      5,
+      Math.min(240, Number(ctx.sessionSettings.importantAlertCooldownMinutes || 30))
+    );
+    await db.save();
 
-    if (action === 'on' || action === 'off') {
-      ctx.sessionSettings.importantAlerts = action === 'on';
-      ctx.sessionSettings.importantAlertCooldownMinutes = Math.max(
-        5,
-        Math.min(240, Number(ctx.sessionSettings.importantAlertCooldownMinutes || 30))
-      );
-      await db.save();
-    }
-
-    const enabled = ctx.sessionSettings.importantAlerts !== false;
     const cooldown = Number(ctx.sessionSettings.importantAlertCooldownMinutes || 30);
 
     await ctx.reply([
       '╭━━━〔 🚨 𝐀_𝐗_𝐇𝐊 𝐈𝐌𝐏𝐎𝐑𝐓𝐀𝐍𝐓 𝐀𝐋𝐄𝐑𝐓𝐒 〕━━━╮',
-      '┃ Status   : ' + stateLabel(enabled),
+      '┃ Status   : ALWAYS ON ✅',
       '┃ Scope    : Main private chats',
-      '┃ Priority : HIGH + MEDIUM only',
+      '┃ Priority : HIGH + MEDIUM',
       '┃ Cooldown : ' + cooldown + ' min per chat',
       '┃ Delivery : Owner private/self inbox',
-      '┃ Control  : Master owner only',
+      '┃ Control  : Cannot be disabled',
       '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯',
       '',
-      'Smart triage watches for serious project leads, payment/budget, urgent deadlines, complaints, security/legal issues, and direct requests for Abdullah.',
+      'Explicit requests like “important hai”, “note karlo”, “Abdullah ko bata dena”, “zaroor/lazmi bata dena” are treated as direct owner-attention signals.',
       '',
       '★ 𝐏𝐎𝐖𝐄𝐑𝐄𝐃 𝐁𝐘 𝐀𝐁𝐃𝐔𝐋𝐋𝐀𝐇_𝐗_𝐇𝐊 ★'
     ].join('\n'));
