@@ -62,6 +62,7 @@ registerCommand({
       '',
       `Attempts: ${s.attempts} • Success: ${s.successes} • Failed: ${s.failures}`,
       `Retries used: ${s.retries}`,
+      `Quota block: ${s.quotaBlockedUntil ? `ACTIVE until ${s.quotaBlockedUntil}` : 'none'}`,
       `Last latency: ${fmtMs(s.lastLatencyMs)}`,
       `Last success: ${s.lastSuccessAt || 'none'}`,
       `Last error: ${s.lastError ? s.lastError.slice(0, 250) : 'none'}`,
@@ -210,7 +211,7 @@ registerCommand({
       `Owner alerts: ${ctx.sessionSettings.ownerAlerts === false ? 'OFF' : 'ON'}`,
       `Auto cleanup: ${ctx.sessionSettings.autoCleanup === false ? 'OFF' : 'ON'}`,
       '',
-      'Private mode guard: non-owner messages are ignored before auto-replies, AI, reactions and command processing.'
+      'Private mode: public commands stay blocked for non-owners, while Auto AI and scheduled Time Reply can continue working.'
     ].join('\n'));
   }
 });
@@ -224,8 +225,8 @@ registerCommand({
       '🔒 *A-X-HK PRIVATE GUARD*', '',
       `Current mode: ${String(mode).toUpperCase()}`,
       'Owner recognition: linked account + configured owner identity',
-      'When PRIVATE: only owner messages/commands are processed.',
-      'Non-owner text, bot commands, Auto AI, saved replies, reactions and away replies stay silent.',
+      'When PRIVATE: public/non-owner bot commands stay blocked.',
+      'Auto AI and scheduled Time Reply remain independent and can still answer normal incoming messages when enabled.',
       'Only owner-level controls can switch private/public mode.'
     ].join('\n'));
   }
