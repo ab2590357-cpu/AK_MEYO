@@ -15,7 +15,7 @@ function quotedMessage(msg) {
 }
 
 registerCommand({
-  name: 'sticker', aliases: ['s', 'stiker'], category: 'media', description: 'Convert an image/video to sticker', cooldown: 5,
+  name: 'sticker', aliases: ['s', 'stiker', 'stickerfactory', 'stickermagic'], category: 'media', description: 'Convert an image/video to sticker', cooldown: 5,
   async run(ctx) {
     let target = ctx.msg;
     const quoted = quotedMessage(ctx.msg);

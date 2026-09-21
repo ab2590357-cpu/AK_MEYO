@@ -1,7 +1,7 @@
 import { registerCommand } from '../../lib/core/registry.js';
 
 registerCommand({
-  name: 'jid', aliases: ['id'], category: 'profile', description: 'Show current chat/sender IDs',
+  name: 'jid', aliases: ['chatid'], category: 'profile', description: 'Show current chat/sender IDs',
   async run(ctx) {
     await ctx.reply(`Chat: ${ctx.chat}\nSender: ${ctx.sender}\nBot: ${ctx.botJid}`);
   }

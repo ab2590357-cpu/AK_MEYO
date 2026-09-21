@@ -2,6 +2,7 @@ import { registerCommand } from '../../lib/core/registry.js';
 import { db } from '../../lib/core/database.js';
 import { config } from '../../lib/config.js';
 import { listInspectableSessions, resolveInspectableSession } from '../../lib/services/session-inspector.js';
+import { waManager } from '../../lib/services/whatsapp.js';
 
 const yesNo = (value) => value ? 'ON' : 'OFF';
 const guard = (ctx) => ctx.sessionId === 'main' && ctx.isMasterOwnerAction;
@@ -111,6 +112,38 @@ registerCommand({
       `┃ Status    : ${String(row.status || 'offline').toUpperCase()}`,
       `┃ Connected : ${row.connected ? 'YES' : 'NO'}`,
       `┃ Enabled   : ${row.enabled !== false ? 'YES' : 'NO'}`,
+      '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯'
+    ].join('\n'));
+  }
+});
+
+
+registerCommand({
+  name: 'removebot',
+  aliases: ['delbot', 'removesession', 'unlinkbot'],
+  category: 'owner',
+  description: 'Master-owner remove a linked bot session by full number or session ID',
+  usage: 'removebot <number|session-id>',
+  ownerOnly: true,
+  masterOnly: true,
+  cooldown: 3,
+  async run(ctx) {
+    if (!guard(ctx)) return;
+    const target = String(ctx.args[0] || '').trim();
+    const row = resolveInspectableSession(target);
+    if (!row) return ctx.reply(`Usage: ${ctx.prefix}removebot <number|session-id>\nUse ${ctx.prefix}activebot to see linked sessions.`);
+    if (row.isMain || row.id === 'main') return ctx.reply('Main owner session is protected and cannot be removed with this command.');
+
+    const label = row.linkedName || row.label || 'Linked User';
+    const phone = row.phone || '-';
+    await waManager.removePublicSession(row.id);
+
+    await ctx.reply([
+      '╭━━━〔 🧹 A_X_HK SESSION REMOVED 〕━━━╮',
+      `┃ Name    : ${label}`,
+      `┃ Number  : ${phone}`,
+      `┃ Session : ${row.id}`,
+      '┃ Status  : LOGGED OUT + REMOVED',
       '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯'
     ].join('\n'));
   }

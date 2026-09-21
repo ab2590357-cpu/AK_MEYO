@@ -8,6 +8,8 @@ import { formatUptime, sleep } from '../../lib/utils/text.js';
 import { serifBold, premiumLabel, premiumTitle } from '../../lib/utils/brand-style.js';
 import { readMenuCard } from '../../lib/services/menu-card.js';
 import { waManager } from '../../lib/services/whatsapp.js';
+import { OWNER_PROFILE } from '../../lib/core/owner-profile.js';
+import { sendControlCenter, sendOwnerCard } from '../../lib/services/premium-experience.js';
 
 const categoryIcons = {
   system: '🤖', tools: '🧰', utility: '🛠️', text: '✍️', productivity: '📋', games: '🎮', fun: '🎉',
@@ -293,6 +295,7 @@ registerCommand({
   name: 'menu', aliases: ['help', 'commands'], category: 'system', description: 'Show premium command menu or one category', usage: 'menu [category|all]', cooldown: 3,
   async run(ctx) {
     const requested = String(ctx.args[0] || '').toLowerCase();
+    if (!requested) return sendControlCenter(ctx);
     if (requested === 'all') return sendFullMenuChat(ctx);
     const text = categoryMenu(ctx.prefix, requested, ctx.sessionSettings.mode || config.mode, ctx.sessionSettings.menuTheme || 'royal', ctx.sessionSettings);
     if (!text) return;
@@ -430,19 +433,10 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'owner', aliases: ['ownerinfo', 'contactowner'], category: 'system', description: 'Show bot owner in premium style',
+  name: 'owner', aliases: ['ownerinfo', 'contactowner'], category: 'system', description: 'Show the premium A_X_HK owner profile card',
+  cooldown: 3,
   async run(ctx) {
-    const number = config.ownerNumber ? `+${config.ownerNumber}` : 'Not configured';
-    await ctx.reply([
-      `╭━━━〔 👑 ${serifBold('OWNER CARD')} 👑 〕━━━╮`,
-      `┃ 🧑‍💻 NAME   ${serifBold(config.ownerName)}`,
-      `┃ 📞 NUMBER ${serifBold(number)}`,
-      `┃ 🔗 WA     ${config.ownerContactUrl || 'Contact link not configured'}`,
-      `┃ 🤖 BOT    ${serifBold(config.shortName)}`,
-      `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
-      '',
-      ...premiumFooterBlock()
-    ].join('\n'));
+    await sendOwnerCard(ctx, OWNER_PROFILE);
   }
 });
 

@@ -1,5 +1,6 @@
 import { registerCommand } from '../../lib/core/registry.js';
 import { cleanupDownloadedMedia, downloadPublicMedia, downloadSearchMedia } from '../../lib/services/media-downloader.js';
+import { sendMusicCard } from '../../lib/services/premium-experience.js';
 
 const ITUNES_SEARCH = 'https://itunes.apple.com/search';
 const DEEZER_SEARCH = 'https://api.deezer.com/search';
@@ -107,7 +108,8 @@ function externalAdReply(item, title, body) {
 
 async function sendAudioItem(ctx, item, fallbackTitle = 'A-X-HK Audio') {
   const title = mediaTitle(item, fallbackTitle);
-  await ctx.reply(audioInfoCard(item, fallbackTitle));
+  try { await sendMusicCard(ctx, item, fallbackTitle); }
+  catch { await ctx.reply(audioInfoCard(item, fallbackTitle)); }
   return ctx.send({
     audio: { url: item.filePath },
     mimetype: item.mimetype || 'audio/mp4',

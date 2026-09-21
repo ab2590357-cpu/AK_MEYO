@@ -2,6 +2,7 @@ import { registerCommand } from '../../lib/core/registry.js';
 import { askAI } from '../../lib/services/ai.js';
 import { getCommand } from '../../lib/core/registry.js';
 import { botKnowledgePrompt } from '../../lib/core/bot-knowledge.js';
+import { sendAIAnswerCard } from '../../lib/services/premium-experience.js';
 
 function personaPrompt(value = 'default') {
   const map = {
@@ -37,7 +38,8 @@ registerCommand({
       ? [botKnowledgePrompt(ctx.argText), '', 'USER QUESTION:', ctx.argText].join('\n')
       : ctx.argText;
     const result = await askAI(prompt, ctx.senderNumber, aiOptions(ctx));
-    await ctx.reply(result);
+    try { await sendAIAnswerCard(ctx, result, ctx.argText); }
+    catch { await ctx.reply(result); }
   }
 });
 
