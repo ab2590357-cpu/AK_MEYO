@@ -59,7 +59,7 @@ async function sendImage(ctx, image, caption = '') {
 }
 
 registerCommand({
-  name: 'controlcenter', aliases: ['center', 'hub'], category: 'system', description: 'Open the A_X_HK premium WhatsApp control center', cooldown: 3,
+  name: 'axcenter', aliases: ['axcontrol', 'axhub'], category: 'system', description: 'Open the A_X_HK premium WhatsApp control center', cooldown: 3,
   async run(ctx) { await sendControlCenter(ctx); }
 });
 
