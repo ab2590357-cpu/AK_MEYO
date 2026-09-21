@@ -172,6 +172,17 @@ function premiumAutoFeatureBlock(prefix) {
   ], '🛡️');
 }
 
+function premiumExperienceBlock(prefix) {
+  return rowBox('A-X-HK OS • NEW PREMIUM', [
+    `┃ ✦ *${prefix}axhk*  •  *${prefix}secret*  •  *${prefix}magic*`,
+    `┃ 🎟️ *${prefix}pass*  •  *${prefix}id*  •  *${prefix}vibe*`,
+    `┃ 🎨 *${prefix}poster*  •  *${prefix}dp*  •  *${prefix}meme*`,
+    `┃ 📖 *${prefix}story*  •  *${prefix}box*  •  *${prefix}playlist*`,
+    `┃ 🪄 *${prefix}sticker*  •  *${prefix}song*  •  *${prefix}video*`,
+    `┃ 👑 *${prefix}owner*  •  ⚡ *${prefix}ping*`
+  ], '✦');
+}
+
 function themeTokens(theme = 'royal') {
   const key = ['royal', 'neon', 'minimal'].includes(String(theme).toLowerCase()) ? String(theme).toLowerCase() : 'royal';
   if (key === 'neon') return { key, crown: '⚡', sparkle: '🟢', top: '╔════════', bottom: '╚════════', bullet: '▸', divider: '━━━━━━━━' };
@@ -228,6 +239,8 @@ function categoryMenu(prefix, requested, mode = config.mode, theme = 'royal', me
       `┃ Type *${prefix}tools*  Type *${prefix}media*`,
       `┃ Type *${prefix}menu all* for full catalog`
     ], '🧭'),
+    '',
+    ...premiumExperienceBlock(prefix),
     '',
     ...premiumAutoFeatureBlock(prefix),
     '',
@@ -335,7 +348,10 @@ registerCommand({
   name: 'menu', aliases: ['help', 'commands'], category: 'system', description: 'Show premium command menu or one category', usage: 'menu [category|all]', cooldown: 3,
   async run(ctx) {
     const requested = String(ctx.args[0] || '').toLowerCase();
-    if (!requested) return sendMenuCard(ctx, premiumHomeMenu(ctx));
+    if (!requested) {
+      const text = categoryMenu(ctx.prefix, '', ctx.sessionSettings.mode || config.mode, ctx.sessionSettings.menuTheme || 'royal', ctx.sessionSettings);
+      return sendMenuCard(ctx, text);
+    }
     if (requested === 'all') return sendFullMenuChat(ctx);
     const text = categoryMenu(ctx.prefix, requested, ctx.sessionSettings.mode || config.mode, ctx.sessionSettings.menuTheme || 'royal', ctx.sessionSettings);
     if (!text) return;
