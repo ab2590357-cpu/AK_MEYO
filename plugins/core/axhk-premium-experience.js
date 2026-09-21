@@ -8,7 +8,7 @@ import { contextInfo, targetJidFromMessage, unwrapMessage, extractText } from '.
 import { recentChatMessages } from '../../lib/services/chat-history.js';
 import { askAI, askAIVision, generateAIImage, synthesizeSpeech, transcribeAudio } from '../../lib/services/ai.js';
 import {
-  renderPassCard, renderIdentityCard, renderPoster, renderDpStudio, renderMeme,
+  renderPoster, renderDpStudio, renderMeme,
   sendCard, sendOwnerCard, sendControlCenter, sendAxhkOs, sendAIAnswerCard, stableMemberId
 } from '../../lib/services/premium-experience.js';
 
@@ -91,30 +91,55 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'pass', aliases: ['accesspass', 'memberpass'], category: 'profile', description: 'Generate your premium A_X_HK access pass', cooldown: 5,
+  name: 'pass', aliases: ['accesspass', 'memberpass'], category: 'profile', description: 'Show your premium A_X_HK access pass', cooldown: 5,
   async run(ctx) {
     const memberId = stableMemberId(ctx.sessionId, ctx.sender);
-    const image = await renderPassCard({
-      name: displayName(ctx),
-      memberId,
-      vip: Boolean(ctx.user.premium),
-      joined: ctx.user.axhkJoinedAt || today(),
-      commands: ctx.user.commandCount || 0
-    });
-    ctx.user.axhkJoinedAt ||= today();
-    await sendImage(ctx, image, `🎟️ *A_X_HK ACCESS PASS*\n${ctx.user.premium ? '💎 VIP VERIFIED\n' : ''}ID: ${memberId}\n\n${config.footerMessage}`);
+    const joined = ctx.user.axhkJoinedAt || today();
+    const commands = Number(ctx.user.commandCount || 0);
+    const vip = Boolean(ctx.user.premium);
+    ctx.user.axhkJoinedAt ||= joined;
+    await db.save();
+    await ctx.reply([
+      '╭━━━━〔 🎟️ *A_X_HK ACCESS PASS* 〕━━━━╮',
+      `┃ 👤 *Holder*     • ${displayName(ctx)}`,
+      `┃ 🪪 *Member ID*  • ${memberId}`,
+      `┃ 💎 *Tier*       • ${vip ? 'VIP VERIFIED' : 'STANDARD MEMBER'}`,
+      `┃ 🟢 *Status*     • ACTIVE`,
+      `┃ 📅 *Member Since* • ${joined}`,
+      `┃ ⚡ *Activity*   • ${commands} COMMANDS`,
+      '┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫',
+      '┃ ✦ PRIVATE DIGITAL ACCESS',
+      '┃ ✦ A_X_HK WHATSAPP OS MEMBER',
+      '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯',
+      '',
+      config.footerMessage
+    ].join('\n'));
   }
 });
 
 registerCommand({
-  name: 'digitalid', aliases: ['id', 'identity', 'myid'], category: 'profile', description: 'Generate your A_X_HK digital identity card', cooldown: 5,
+  name: 'digitalid', aliases: ['id', 'identity', 'myid'], category: 'profile', description: 'Show your A_X_HK digital identity card', cooldown: 5,
   async run(ctx) {
     const memberId = stableMemberId(ctx.sessionId, ctx.sender);
-    const commands = ctx.user.commandCount || 0;
-    const image = await renderIdentityCard({
-      name: displayName(ctx), memberId, vip: Boolean(ctx.user.premium), level: levelFor(commands), commands
-    });
-    await sendImage(ctx, image, `🪪 *A_X_HK DIGITAL ID*\n${memberId}\nThis is a bot identity card, not an official/government ID.\n\n${config.footerMessage}`);
+    const commands = Number(ctx.user.commandCount || 0);
+    const vip = Boolean(ctx.user.premium);
+    const number = String(ctx.senderNumber || '').replace(/\D/g, '') || 'PRIVATE';
+    await ctx.reply([
+      '╭━━━━〔 🪪 *A_X_HK DIGITAL IDENTITY* 〕━━━━╮',
+      `┃ 👤 *Identity*   • ${displayName(ctx)}`,
+      `┃ 📱 *WhatsApp*   • +${number}`,
+      `┃ 🔐 *Bot ID*     • ${memberId}`,
+      `┃ 💠 *Tier*       • ${vip ? 'VIP' : 'STANDARD'}`,
+      `┃ ⭐ *Level*      • ${levelFor(commands)}`,
+      `┃ ⚡ *Activity*   • ${commands} COMMANDS`,
+      `┃ 🟢 *Network*    • A_X_HK OS`,
+      '┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫',
+      '┃ ✓ VERIFIED INSIDE THIS BOT',
+      '┃ ⚠ NOT A GOVERNMENT / LEGAL ID',
+      '╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯',
+      '',
+      config.footerMessage
+    ].join('\n'));
   }
 });
 
