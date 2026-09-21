@@ -9,7 +9,7 @@ import { serifBold, premiumLabel, premiumTitle } from '../../lib/utils/brand-sty
 import { readMenuCard } from '../../lib/services/menu-card.js';
 import { waManager } from '../../lib/services/whatsapp.js';
 import { OWNER_PROFILE } from '../../lib/core/owner-profile.js';
-import { sendControlCenter, sendOwnerCard } from '../../lib/services/premium-experience.js';
+import { sendOwnerCard } from '../../lib/services/premium-experience.js';
 
 const categoryIcons = {
   system: '🤖', tools: '🧰', utility: '🛠️', text: '✍️', productivity: '📋', games: '🎮', fun: '🎉',
@@ -112,6 +112,46 @@ function creatorStudioBlock() {
     `┃ 🚀 *LOGO • BOT • BRANDING*`,
     `┃ 🔗 ${creatorStudioUrl()}`
   ], '💎');
+}
+
+function premiumHomeMenu(ctx) {
+  const p = ctx.prefix || '.';
+  return [
+    `╭━━━━〔 👑 ${serifBold('A-X-HK PREMIUM MENU')} 👑 〕━━━━╮`,
+    `┃ 🤖 *${config.shortName}*  •  V${config.version}`,
+    `┃ 🟢 ONLINE  •  ⚡ PREFIX ${p}`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    '',
+    `╭━━〔 ⚡ ${serifBold('QUICK ACCESS')} 〕━━╮`,
+    `┃ ${p}ping   •   ${p}alive   •   ${p}owner`,
+    `┃ ${p}menu all   •   ${p}categories`,
+    `┃ ${p}searchcmd <word>   •   ${p}links`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    '',
+    `╭━━〔 ✦ ${serifBold('A_X_HK OS')} 〕━━╮`,
+    `┃ ${p}axhk   •   ${p}secret   •   ${p}magic`,
+    `┃ ${p}pass   •   ${p}id   •   ${p}vibe`,
+    `┃ ${p}poster   •   ${p}dp   •   ${p}meme`,
+    `┃ ${p}story   •   ${p}box   •   ${p}playlist`,
+    `┃ ${p}sticker   •   ${p}song   •   ${p}video`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    '',
+    `╭━━〔 🎛️ ${serifBold('BOT CONTROL')} 〕━━╮`,
+    `┃ ${p}ai <question>   •   ${p}play <song>`,
+    `┃ ${p}pair <number>   •   ${p}sessioninfo`,
+    `┃ ${p}multilink   •   ${p}support`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    '',
+    `╭━━〔 💎 ${serifBold('CREATOR STUDIO')} 〕━━╮`,
+    `┃ 🎨 LOGO • BOT • BRANDING • TOOLS`,
+    `┃ 🔗 ${creatorStudioUrl()}`,
+    `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
+    '',
+    `📚 Full catalog: *${p}menu all*`,
+    `🧭 Category menu: *${p}menu <category>*`,
+    '',
+    ...premiumFooterBlock()
+  ].join('\n');
 }
 
 function premiumAutoFeatureBlock(prefix) {
@@ -295,11 +335,10 @@ registerCommand({
   name: 'menu', aliases: ['help', 'commands'], category: 'system', description: 'Show premium command menu or one category', usage: 'menu [category|all]', cooldown: 3,
   async run(ctx) {
     const requested = String(ctx.args[0] || '').toLowerCase();
-    if (!requested) return sendControlCenter(ctx);
+    if (!requested) return sendMenuCard(ctx, premiumHomeMenu(ctx));
     if (requested === 'all') return sendFullMenuChat(ctx);
     const text = categoryMenu(ctx.prefix, requested, ctx.sessionSettings.mode || config.mode, ctx.sessionSettings.menuTheme || 'royal', ctx.sessionSettings);
     if (!text) return;
-    // Main menu and category menus are always delivered as one WhatsApp media message.
     await sendMenuCard(ctx, text);
   }
 });
