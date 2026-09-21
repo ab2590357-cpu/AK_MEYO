@@ -107,7 +107,7 @@ registerCommand({
 });
 
 registerCommand({
-  name: 'digitalid', aliases: ['identity', 'myid'], category: 'profile', description: 'Generate your A_X_HK digital identity card', cooldown: 5,
+  name: 'digitalid', aliases: ['id', 'identity', 'myid'], category: 'profile', description: 'Generate your A_X_HK digital identity card', cooldown: 5,
   async run(ctx) {
     const memberId = stableMemberId(ctx.sessionId, ctx.sender);
     const commands = ctx.user.commandCount || 0;
