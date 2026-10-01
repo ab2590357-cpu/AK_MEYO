@@ -14,57 +14,42 @@ const officeNow = new Date('2026-01-01T16:30:00Z').getTime();
 const sleepNow = new Date('2026-01-01T05:30:00Z').getTime();
 const availableNow = new Date('2026-01-01T12:30:00Z').getTime();
 
-test('dispatcher patch upgrades scheduled replies into timed AI-aware flow', () => {
+test('dispatcher validator accepts private-only automation flow', () => {
   const source = [
-    "import { AUTO_REPLY_TEXT, awayCooldownMs, normalizeAwayText, shouldSendAwayReply } from './auto-reply-policy.js';",
-    'const ownerActivityAt = new Map();',
-    'function rememberOwnerActivity(ctx) { ownerActivityAt.set(`${ctx.sessionId}:${ctx.chat}`, Date.now()); }',
-    'async function maybeDirectAutomation(ctx) {',
-    '  const away = ctx.sessionSettings.away;',
-    '  if (shouldSendAwayReply({ ownerLastActiveAt: ownerActivityAt.get(key) || 0 })) {',
-    '    const text = normalizeAwayText(away?.text) || AUTO_REPLY_TEXT;',
-    '  }',
-    '}',
-    'function maybeAwardXp(ctx) { return ctx; }',
-    'export async function dispatchMessage(sock, msg, runtime = {}) {',
-    '  applyAutoFeatures(ctx, sock, msg);',
-    '  if (!ctx.text) return;',
-    '',
-    '  if (await moderation(ctx)) return;',
-    '  rememberOwnerActivity(ctx);',
-    '}'
-  ].join('\n');
+    "async function maybeDirectAutomation(ctx) {",
+    "  if (ctx.msg.key?.fromMe || !isPrivateUserChat(ctx)) return false;",
+    "  const privateAI = ctx.sessionId === 'main' && isPrivateUserChat(ctx) && Boolean(ctx.sessionSettings.autoAI);",
+    "}",
+    "function applyAutoFeatures(ctx, sock, msg) {",
+    "  if (!isPrivateUserChat(ctx)) return;",
+    "}",
+    "export async function dispatchMessage(sock, msg, runtime = {}) {",
+    "  if (!ctx.isGroup && !isPrivateUserChat(ctx)) return;",
+    "  const exact = isPrivateUserChat(ctx) ? db.autoReplies(ctx.sessionId)[ctx.text.toLowerCase()] : '';",
+    "}"
+  ].join('\\n');
 
-  const patched = patchDispatcherSource(source);
-
-  assert.match(patched, /activeReplySlot/);
-  assert.match(patched, /ctx\.sessionSettings\.autoAI/);
-  assert.match(patched, /Auto AI is completely independent from the scheduled reply/);
-  assert.match(patched, /Auto AI reply failed/);
-  assert.doesNotMatch(patched, /AFK|afk\?\.enabled|ctx\.sessionSettings\.afk/);
-  assert.doesNotMatch(patched, /30 \* 60 \* 1000/);
+  assert.equal(patchDispatcherSource(source), source);
 });
 
-test('scheduled auto reply still runs for non-text messages', () => {
-  const source = [
-    "import { AUTO_REPLY_TEXT, awayCooldownMs, normalizeAwayText, shouldSendAwayReply } from './auto-reply-policy.js';",
-    'const ownerActivityAt = new Map();',
-    'function rememberOwnerActivity(ctx) { ownerActivityAt.set(`${ctx.sessionId}:${ctx.chat}`, Date.now()); }',
-    'async function maybeDirectAutomation(ctx) { const text = normalizeAwayText(away?.text); shouldSendAwayReply({}); }',
-    'function maybeAwardXp(ctx) { return ctx; }',
-    'export async function dispatchMessage(sock, msg, runtime = {}) {',
-    '  rememberOwnerActivity(ctx);',
-    '  applyAutoFeatures(ctx, sock, msg);',
-    '  if (!ctx.text) return;',
-    '',
-    '  if (await moderation(ctx)) return;',
-    '}'
-  ].join('\n');
+test('dispatcher validator rejects group-triggered automation and cinematic welcome', () => {
+  const unsafe = [
+    "async function maybeDirectAutomation(ctx) {",
+    "  if (ctx.msg.key?.fromMe || !isPrivateUserChat(ctx)) return false;",
+    "  const privateAI = ctx.sessionId === 'main' && isPrivateUserChat(ctx) && Boolean(ctx.sessionSettings.autoAI);",
+    "  const groupAI = ctx.isGroup && Boolean(ctx.sessionSettings.autoAI);",
+    "}",
+    "function applyAutoFeatures(ctx, sock, msg) {",
+    "  if (!isPrivateUserChat(ctx)) return;",
+    "}",
+    "export async function dispatchMessage(sock, msg, runtime = {}) {",
+    "  if (!ctx.isGroup && !isPrivateUserChat(ctx)) return;",
+    "  const exact = isPrivateUserChat(ctx) ? db.autoReplies(ctx.sessionId)[ctx.text.toLowerCase()] : '';",
+    "  sendCinematicIntro(ctx);",
+    "}"
+  ].join('\\n');
 
-  const patched = patchDispatcherSource(source);
-
-  assert.doesNotMatch(patched, /if \(!ctx\.text\) return;/);
-  assert.match(patched, /if \(!ctx\.text\) \{\n    await maybeDirectAutomation\(ctx\);\n    return;\n  \}/);
+  assert.throws(() => patchDispatcherSource(unsafe), /private-only automation policy validation failed/i);
 });
 
 test('session scheduled-reply toggle stays independent while AFK remains disabled', () => {
@@ -103,5 +88,5 @@ test('reply policy allows unavailable time only and group mentions only', () => 
   assert.equal(shouldSendAwayReply({ now: officeNow, away: { enabled: false }, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), false);
   assert.equal(shouldSendAwayReply({ now: officeNow, ownerLastActiveAt: officeNow - 60_000, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), false);
   assert.equal(shouldSendAwayReply({ isGroup: true, wasMentioned: false, now: officeNow, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), false);
-  assert.equal(shouldSendAwayReply({ isGroup: true, wasMentioned: true, now: officeNow, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), true);
+  assert.equal(shouldSendAwayReply({ isGroup: true, wasMentioned: true, now: officeNow, cooldownMs: twentyMinutes, timezone: 'Asia/Karachi' }), false);
 });

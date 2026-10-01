@@ -44,8 +44,8 @@ assert.equal(
 );
 assert.equal(
   shouldSendAwayReply({ isGroup: true, wasMentioned: true, now: officeNow, timezone: 'Asia/Karachi' }),
-  true,
-  'group mention should receive reply in the same group chat'
+  false,
+  'group mention must never trigger a scheduled reply'
 );
 assert.equal(
   shouldSendAwayReply({ now: availableNow, timezone: 'Asia/Karachi' }),
