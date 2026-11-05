@@ -73,13 +73,20 @@ export default async function handler(req, res) {
         databaseConnected = Array.isArray(items);
       } catch (error) { console.error('Channel Hub health check unavailable', error?.message); }
     }
-    const submissionsOpen = secret('CHANNEL_HUB_ENABLED') === 'true';
-    return send(res, 200, { ok: true, configured, databaseConnected, submissionsOpen, ready: configured && databaseConnected && submissionsOpen });
+    const submissionsRequested = secret('CHANNEL_HUB_ENABLED') === 'true';
+    let workerReady = false;
+    if (submissionsRequested && databaseConnected) {
+      try { workerReady = (await rpc('axhk_worker_ready', {})) === true; }
+      catch (error) { console.error('Worker readiness check failed', error?.message); }
+    }
+    const submissionsOpen = submissionsRequested && workerReady;
+    return send(res, 200, { ok: true, configured, databaseConnected, workerReady, submissionsOpen, ready: configured && databaseConnected && submissionsOpen });
   }
   if (!ensureConfigured()) return send(res, 503, { error: 'Channel Link Hub is not configured yet' });
   try {
     if (mode === 'submit' && req.method === 'POST') {
       if (secret('CHANNEL_HUB_ENABLED') !== 'true') return send(res, 503, { error: 'Submissions are not open yet' });
+      if ((await rpc('axhk_worker_ready', {})) !== true) return send(res, 503, { error: 'Posting bot is temporarily offline. Please try again when it reconnects.' });
       if (!originAllowed(req)) return send(res, 403, { error: 'Origin not allowed' });
       if (req.body?.website) return send(res, 400, { error: 'Submission rejected' }); // honeypot
       const { link, kind } = canonicalLink(req.body?.link);
@@ -103,6 +110,13 @@ export default async function handler(req, res) {
       if (!Array.isArray(rows) || !rows.length) return send(res, 404, { error: 'Submission not found' });
       const x = rows[0];
       return send(res, 200, { ok: true, id: x.id, status: x.status, kind: x.kind, createdAt: x.created_at, postedAt: x.posted_at || null, note: x.status === 'failed' ? 'Posting failed. Owner can review and retry.' : undefined });
+    }
+    if (mode === 'heartbeat' && req.method === 'POST' && auth(req, 'WORKER_TOKEN')) {
+      const jid = String(req.body?.channelJid || '');
+      const verified = req.body?.verified === true;
+      if (!/^[0-9]{10,30}@newsletter$/.test(jid)) return send(res, 400, { error: 'Invalid Channel JID' });
+      const ok = await rpc('axhk_record_worker_heartbeat', {p_channel_jid:jid, p_verified:verified});
+      return send(res,ok?200:503,{ok:Boolean(ok)});
     }
     if (mode === 'worker' && auth(req, 'WORKER_TOKEN')) {
       if (req.method === 'GET') {
@@ -131,7 +145,7 @@ export default async function handler(req, res) {
         return send(res, updated ? 200 : 409, { ok: Boolean(updated) });
       }
     }
-    if ((mode === 'worker' || mode === 'admin') && !auth(req, mode === 'worker' ? 'WORKER_TOKEN' : 'ADMIN_TOKEN')) return send(res, 401, { error: 'Unauthorized' });
+    if ((mode === 'worker' || mode === 'heartbeat' || mode === 'admin') && !auth(req, mode === 'admin' ? 'ADMIN_TOKEN' : 'WORKER_TOKEN')) return send(res, 401, { error: 'Unauthorized' });
     return send(res, 404, { error: 'Endpoint not found' });
   } catch (error) {
     if (mode === 'submit' && /WhatsApp|Group|Channel|https/i.test(String(error?.message || '')) && !String(error.message).includes('Database')) return send(res, 400, { error: error.message });
