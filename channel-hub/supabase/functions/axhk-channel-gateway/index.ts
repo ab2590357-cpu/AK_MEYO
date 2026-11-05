@@ -4,7 +4,7 @@ const endpoint = Deno.env.get('SUPABASE_URL') || '';
 const defaults = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') || '{}');
 const privateKey = defaults.default || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 const db = createClient(endpoint, privateKey, { auth: { autoRefreshToken: false, persistSession: false } });
-const allowedRpc = new Set(['axhk_submit_link','axhk_claim_link','axhk_complete_link','axhk_admin_link_action','axhk_record_worker_heartbeat','axhk_worker_ready']);
+const allowedRpc = new Set(['axhk_submit_link','axhk_claim_link','axhk_complete_link','axhk_admin_link_action','axhk_record_worker_heartbeat','axhk_worker_ready','axhk_admin_submit_link']);
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
 const hex64 = /^[a-f0-9]{64}$/i;
 
