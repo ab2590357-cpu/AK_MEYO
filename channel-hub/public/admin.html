@@ -34,5 +34,19 @@ async function load(){
     note.textContent=d.submissions.length+' submissions found';
   }catch(e){note.textContent=e.message}
 }
+$('#ownerSubmit').onsubmit=async (event)=>{
+  event.preventDefault();
+  const button=$('#ownerButton'),status=$('#ownerStatus');
+  const link=$('#ownerLink').value.trim();
+  button.disabled=true;
+  status.textContent='Sending to queue…';
+  try{
+    const reply=await call('POST',{action:'submit',link});
+    status.textContent='✓ Accepted: '+reply.kind+' link. Bot publishes automatically when connected.';
+    $('#ownerLink').value='';
+    await load();
+  }catch(error){status.textContent=error.message;}
+  finally{button.disabled=false;}
+};
 $('#load').onclick=load;
 </script></body></html>
