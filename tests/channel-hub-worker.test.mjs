@@ -200,3 +200,22 @@ test('missing metadata falls back to single plain link message, never breaks que
   assert.equal(msg.text.split('\n')[0],item.link);
   assert.match(msg.text,/A-X-HK Website|SUBMIT YOUR GROUP/);
 });
+
+test('premium post positions the brand below divider and leaves a blank line above submit CTA',()=>{
+  for(const item of [
+    {kind:'group',link:'https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST'},
+    {kind:'channel',link:'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F'}
+  ]) {
+    const text=formatChannelLinkPost(item,{title:'Premium Community'});
+    const lines=text.split('\n');
+    const divider=lines.indexOf('━━━━━━━━━━━━━━');
+    const brand=lines.indexOf('👑 *_ABDULLAH X MD LINKS ZONE_*');
+    const cta=lines.indexOf('🌐 *SUBMIT YOUR GROUP OR CHANNEL*');
+    assert.ok(divider>=0&&divider<brand&&brand<cta);
+    assert.equal(lines[divider+1],'');
+    assert.equal(lines[brand+1],'');
+    assert.equal(lines[cta+1],LINK_HUB_WEBSITE);
+    assert.equal(lines[0],item.link);
+    assert.match(text,/Premium Community/);
+  }
+});
