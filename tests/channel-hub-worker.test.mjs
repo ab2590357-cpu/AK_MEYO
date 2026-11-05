@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createChannelHubWorker, normalizeChannelJid } from '../lib/services/channel-hub-worker.js';
+import { createChannelHubWorker, normalizeChannelJid, formatChannelLinkPost, LINK_HUB_WEBSITE } from '../lib/services/channel-hub-worker.js';
 
 test('Channel JID cannot be confused with invite URLs or groups', () => {
   assert.equal(normalizeChannelJid('123456789012345@newsletter'), '123456789012345@newsletter');
@@ -79,4 +79,48 @@ test('worker refuses all queued posts until a verified original Channel post exi
     assert.deepEqual(calls,[{mode:'heartbeat',body:{channelJid:'123456789012345@newsletter',verified:false}}]);
     worker.stop();
   } finally {process.env=old;}
+});
+
+test('published Group invite has Group heading and official website attribution',()=>{
+  const text=formatChannelLinkPost({kind:'group',link:'https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST'});
+  assert.match(text,/WhatsApp Group/);
+  assert.doesNotMatch(text,/WhatsApp Channel/);
+  assert.match(text,/A-X-HK Website/);
+  assert.ok(text.includes(LINK_HUB_WEBSITE));
+  assert.match(text,/chat\.whatsapp\.com/);
+});
+test('published Channel invite has Channel heading and official website attribution',()=>{
+  const text=formatChannelLinkPost({kind:'channel',link:'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F'});
+  assert.match(text,/WhatsApp Channel/);
+  assert.doesNotMatch(text,/WhatsApp Group/);
+  assert.match(text,/A-X-HK Website/);
+  assert.ok(text.includes(LINK_HUB_WEBSITE));
+  assert.throws(()=>formatChannelLinkPost({kind:'group',link:'https://evil.example/other'}));
+});
+test('temporary canonical hostname DNS error retries only on same-project Vercel fallback',async()=>{
+  const old={...process.env};
+  Object.assign(process.env,{
+    CHANNEL_HUB_ENABLED:'true',
+    CHANNEL_HUB_API_URL:'https://axhk-channel-link-hub.vercel.app/api/index',
+    CHANNEL_HUB_WORKER_TOKEN:'test-secret',CHANNEL_HUB_CHANNEL_JID:'123456789012345@newsletter'
+  });
+  const visited=[];
+  try{
+    const worker=createChannelHubWorker({
+      getSocket:()=>({user:{id:'owner'}}),
+      getState:()=>({status:'connected'}),
+      getChannelSource:async()=>({jid:'123456789012345@newsletter',messageId:'owner-channel-post'}),
+      fetcher:async(url,opts)=>{
+        visited.push(url.hostname);
+        if(visited.length===1){const error=new Error('DNS resolution failed');error.cause={code:'ENOTFOUND'};throw error;}
+        return {ok:true,json:async()=>opts.method==='GET'?{item:null}:{ok:true}};
+      },
+      log:{warn(){},info(){}}
+    });
+    await worker.tick();
+    assert.deepEqual(visited.slice(0,2),[
+      'axhk-channel-link-hub.vercel.app','axhk-channel-link-hub-abdulteam.vercel.app'
+    ]);
+    worker.stop();
+  }finally{process.env=old;}
 });
