@@ -64,7 +64,18 @@ function ensureConfigured() {
 const uuidRe = /^[a-f0-9-]{36}$/i;
 export default async function handler(req, res) {
   const mode = String(req.query?.mode || '');
-  if (req.method === 'GET' && mode === 'health') return send(res, 200, { ok: true, ready: Boolean(ensureConfigured()) && secret('CHANNEL_HUB_ENABLED') === 'true' });
+  if (req.method === 'GET' && mode === 'health') {
+    const configured = Boolean(ensureConfigured());
+    let databaseConnected = false;
+    if (configured) {
+      try {
+        const items = await supabase('axhk_channel_submissions?select=id,link,kind,status,created_at,posted_at,attempts,last_error&order=created_at.desc&limit=60');
+        databaseConnected = Array.isArray(items);
+      } catch (error) { console.error('Channel Hub health check unavailable', error?.message); }
+    }
+    const submissionsOpen = secret('CHANNEL_HUB_ENABLED') === 'true';
+    return send(res, 200, { ok: true, configured, databaseConnected, submissionsOpen, ready: configured && databaseConnected && submissionsOpen });
+  }
   if (!ensureConfigured()) return send(res, 503, { error: 'Channel Link Hub is not configured yet' });
   try {
     if (mode === 'submit' && req.method === 'POST') {
