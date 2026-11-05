@@ -165,3 +165,38 @@ test('rejects incorrectly paired link types',()=>{
   assert.throws(()=>formatChannelLinkPost({kind:'group',link:'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F'}));
   assert.throws(()=>formatChannelLinkPost({kind:'channel',link:'https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST'}));
 });
+
+test('smart Group invitation preview uses WhatsApp metadata and no automatic joining',async()=>{
+  const calls=[];
+  const item={kind:'group',link:'https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST'};
+  const message=await buildChannelLinkMessage({
+    groupGetInviteInfo:async code=>{calls.push(code);return {id:'123456789012345@g.us',subject:'Test Community'};},
+    profilePictureUrl:async()=> 'https://pps.whatsapp.net/v/sample.jpg'
+  },item,{
+    imageFetcher:async()=>({ok:true,headers:{get:()=> '8'},arrayBuffer:async()=>new Uint8Array([255,216,255,224,0,0,0,0]).buffer})
+  });
+  assert.equal(calls.length,1);
+  assert.equal(message.linkPreview.title,'Test Community');
+  assert.equal(message.linkPreview.description,'Group chat invite');
+  assert.equal(message.linkPreview.jpegThumbnail.length,8);
+  assert.equal(message.text.split('\n')[0],item.link);
+  assert.match(message.text,/A-X-HK Website|SUBMIT YOUR GROUP/);
+});
+test('Channel invitation preview resolves public name without joining',async()=>{
+  const item={kind:'channel',link:'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F'};
+  const msg=await buildChannelLinkMessage({
+    newsletterMetadata:async()=>({id:'123456789012345@newsletter',name:'Artist Channel'})
+  },item);
+  assert.equal(msg.linkPreview.title,'Artist Channel');
+  assert.equal(msg.linkPreview.description,'WhatsApp Channel');
+  assert.match(msg.text,/Follow this WhatsApp Channel/);
+});
+test('missing metadata falls back to single plain link message, never breaks queue',async()=>{
+  const item={kind:'group',link:'https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST'};
+  const msg=await buildChannelLinkMessage({
+    groupGetInviteInfo:async()=>{throw new Error('not a member')}
+  },item);
+  assert.equal(msg.linkPreview,undefined);
+  assert.equal(msg.text.split('\n')[0],item.link);
+  assert.match(msg.text,/A-X-HK Website|SUBMIT YOUR GROUP/);
+});
