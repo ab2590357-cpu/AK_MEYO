@@ -148,3 +148,13 @@ Bot menu commands:
 - `.linkhubstatus`: owner-only heartbeat and submission readiness check.
 
 Posting is powered by unofficial Baileys Newsletter functionality, not a supported Meta Cloud API Channels publisher. A WhatsApp update could break it or restrict the linked account.
+
+## Owner/admin publishing (2026-11-05)
+
+- Public users: one link per **12 hours** per visitor, with separate network anti-spam limits and duplicate-link restriction.
+- Owner: open https://axhk-channel-link-hub.vercel.app/admin.html and supply the existing private ADMIN_TOKEN from Vercel project settings. The browser tab keeps the token only in the password field; never place it in a URL or share it.
+- The **Owner link publisher** form is separate from the public form. Every owner submission is validated and queued without the visitor cooldown, including deliberately re-sharing a prior link.
+- The API checks ADMIN_TOKEN with constant-time comparison, same-origin rules and verified worker readiness before calling the service-only axhk_admin_submit_link RPC.
+- The service-only RPC is not executable by anon or authenticated database roles. Owner submissions keep the normal Pending -> Publishing -> Published state tracking.
+- Do not retry ambiguous results until you verify the Channel and the admin submission list, because the bot may already have posted.
+- No change to the existing WhatsApp session is needed; the already-connected Termux bot continues polling the same queue.
