@@ -121,6 +121,9 @@ export default async function handler(req, res) {
       return send(res,ok?200:503,{ok:Boolean(ok)});
     }
     if (mode === 'worker' && auth(req, 'WORKER_TOKEN')) {
+      if (req.method === 'GET' && req.query?.action === 'verify') {
+        return send(res,200,{ok:true,workerAuthenticated:true,submissionsEnabled:secret('CHANNEL_HUB_ENABLED')==='true'});
+      }
       if (req.method === 'POST' && req.body?.action === 'heartbeat') {
         if (secret('CHANNEL_HUB_ENABLED') !== 'true') return send(res, 503, { error: 'Worker channel service not active yet' });
         const jid = String(req.body?.channelJid || '');
