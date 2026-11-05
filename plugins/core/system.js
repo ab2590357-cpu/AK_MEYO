@@ -7,7 +7,7 @@ import { db } from '../../lib/core/database.js';
 import { formatUptime, sleep } from '../../lib/utils/text.js';
 import { serifBold, premiumLabel, premiumTitle } from '../../lib/utils/brand-style.js';
 import { readMenuCard } from '../../lib/services/menu-card.js';
-import { publishChannelMenu, channelMenuPostStatus, forwardChannelMenu, disableChannelMenuForward, buildChannelMenuAnnouncement, CHANNEL_URL } from '../../lib/services/channel-menu.js';
+import { publishChannelMenu, channelMenuPostStatus, disableChannelMenuForward, buildChannelMenuAnnouncement, CHANNEL_URL } from '../../lib/services/channel-menu.js';
 import { waManager } from '../../lib/services/whatsapp.js';
 import { OWNER_PROFILE } from '../../lib/core/owner-profile.js';
 import { sendOwnerCard } from '../../lib/services/premium-experience.js';
@@ -255,33 +255,20 @@ function categoryMenu(prefix, requested, mode = config.mode, theme = 'royal', me
   return lines.join('\n');
 }
 
-function menuChannelFooter() {
-  const url = String(config.whatsappChannelUrl || 'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F').trim();
-  return url ? `\n\n📣 *A-X-HK OFFICIAL CHANNEL*\n${url}\n🔗 Open the link to view / follow our Channel.` : '';
-}
-
 async function sendMenuCard(ctx, caption) {
-  const withChannel = String(caption) + menuChannelFooter();
-  // A genuine owner-published premium Channel menu contains its own image and
-  // command listing. Forward it as ONE native Channel card, not a forwarded
-  // post followed by an unrelated giant text reply. Preserve a normal menu
-  // fallback for users whose WhatsApp client does not display the forward.
-  if (await forwardChannelMenu(ctx, {requireBranded:true})) return;
+  // Send one normal premium image/menu response, without Channel forwarding
+  // or an unsolicited Channel link appended to every command.
   try {
     const { buffer: image } = await readMenuCard();
-    return await ctx.send({ image, caption: withChannel }, { quoted: ctx.msg });
+    return await ctx.send({ image, caption: String(caption) }, { quoted: ctx.msg });
   } catch {
-    return ctx.reply(withChannel);
+    return ctx.reply(String(caption));
   }
 }
-
 async function sendChannelLinkedCard(ctx, caption) {
-  // Used for status/ping: the live status stays current and a separate
-  // authentic Channel forward supplies native View Channel when available.
-  // Never invent quoted newsletter metadata or publish a post on .ping.
-  const text = String(caption) + menuChannelFooter();
-  await ctx.reply(text);
-  await forwardChannelMenu(ctx, {requireBranded:true});
+  // Legacy wrapper for live .ping: the user opted out of the extra Channel
+  // forward and URL footer, so return only this command's live answer.
+  return ctx.reply(String(caption));
 }
 
 async function sendBrandCard(ctx, caption) {
@@ -468,13 +455,14 @@ function statusClock() {
 }
 
 async function sendAliveCard(ctx, caption) {
+  // Keep the configured premium menu image with current status text.
+  // Do not append the Channel URL or forward a Channel update.
   try {
     const { buffer: image } = await readMenuCard();
-    await ctx.send({ image, caption: String(caption) + menuChannelFooter() }, { quoted: ctx.msg });
+    return await ctx.send({ image, caption: String(caption) }, { quoted: ctx.msg });
   } catch {
-    await ctx.reply(String(caption) + menuChannelFooter());
+    return ctx.reply(String(caption));
   }
-  await forwardChannelMenu(ctx, {requireBranded:true});
 }
 
 registerCommand({
@@ -560,7 +548,6 @@ registerCommand({
   cooldown: 3,
   async run(ctx) {
     await sendOwnerCard(ctx, OWNER_PROFILE);
-    await forwardChannelMenu(ctx, {requireBranded:true});
   }
 });
 
@@ -681,13 +668,8 @@ registerCommand({
       '',
       '📚 Type *' + ctx.prefix + 'menu* for the bot commands.'
     ].join('\n');
-    // Keep the genuine Channel post forward when the owner has published it.
-    // Otherwise send the Channel link FIRST in a text message so WhatsApp can
-    // generate a native preview. An image-caption-only message does not
-    // consistently produce a View Channel preview card.
-    if (await forwardChannelMenu(ctx)) {
-      return ctx.send({ text: content }, { quoted: ctx.msg });
-    }
+    // Only the explicit .channel command shares the Channel link. Never
+    // forward a previously published Channel post automatically.
     return ctx.send({ text: config.whatsappChannelUrl + '\n\n' + content.replace(config.whatsappChannelUrl, '').trim() }, { quoted: ctx.msg });
   }
 });
