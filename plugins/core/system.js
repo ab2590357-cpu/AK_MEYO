@@ -7,6 +7,7 @@ import { db } from '../../lib/core/database.js';
 import { formatUptime, sleep } from '../../lib/utils/text.js';
 import { serifBold, premiumLabel, premiumTitle } from '../../lib/utils/brand-style.js';
 import { readMenuCard } from '../../lib/services/menu-card.js';
+import { publishChannelMenu, channelMenuPostStatus, forwardChannelMenu, disableChannelMenuForward, CHANNEL_URL } from '../../lib/services/channel-menu.js';
 import { waManager } from '../../lib/services/whatsapp.js';
 import { OWNER_PROFILE } from '../../lib/core/owner-profile.js';
 import { sendOwnerCard } from '../../lib/services/premium-experience.js';
@@ -258,6 +259,11 @@ function menuChannelFooter() {
 
 async function sendMenuCard(ctx, caption) {
   const withChannel = String(caption) + menuChannelFooter();
+  // An authentic WhatsApp Channel forward can only originate from a real
+  // previously published Channel message. Never fabricate newsletter metadata.
+  if (await forwardChannelMenu(ctx)) {
+    return ctx.send({ text: withChannel }, { quoted: ctx.msg });
+  }
   try {
     const { buffer: image } = await readMenuCard();
     return await ctx.send({ image, caption: withChannel }, { quoted: ctx.msg });
@@ -362,6 +368,33 @@ registerCommand({
     const text = categoryMenu(ctx.prefix, requested, ctx.sessionSettings.mode || config.mode, ctx.sessionSettings.menuTheme || 'royal', ctx.sessionSettings);
     if (!text) return;
     await sendMenuCard(ctx, text);
+  }
+});
+
+registerCommand({
+  name: 'channelmenu',
+  category: 'owner',
+  description: 'Manage authentic A-X-HK Channel menu forwarding',
+  usage: 'channelmenu status|publish|disable',
+  ownerOnly: true,
+  masterOnly: true,
+  cooldown: 10,
+  async run(ctx) {
+    if (ctx.sessionId !== 'main') return ctx.reply('Only the main owner session can manage the official Channel.');
+    const mode = String(ctx.args[0] || 'status').toLowerCase();
+    if (mode === 'status') {
+      const stored = await channelMenuPostStatus();
+      return ctx.reply(stored
+        ? '✅ Real Channel menu post saved. .menu will forward the published post, then send the current commands.\n📣 ' + CHANNEL_URL
+        : 'ℹ️ No published Channel menu saved yet. .menu currently sends the brand image and link normally.\nTo publish once as admin: ' + ctx.prefix + 'channelmenu publish');
+    }
+    if (mode === 'disable') {
+      await disableChannelMenuForward();
+      return ctx.reply('✅ Genuine Channel forwarding disabled; standard image menu restored. No Channel posts were deleted.');
+    }
+    if (mode !== 'publish') return ctx.reply('Usage: ' + ctx.prefix + 'channelmenu status|publish|disable');
+    const posted = await publishChannelMenu(ctx);
+    return ctx.reply('✅ Menu image published to your actual WhatsApp Channel, and original post saved for authentic forwarding.\n📣 ' + CHANNEL_URL + '\n\nNow use ' + ctx.prefix + 'menu to test its appearance. Native View Channel presentation depends on WhatsApp.');
   }
 });
 
