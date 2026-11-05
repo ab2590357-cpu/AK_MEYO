@@ -61,6 +61,75 @@ function auth(req, env) { return secureEqual(String(req.headers.authorization ||
 function ensureConfigured() {
   return secret('SUPABASE_URL') && secret('EDGE_PROXY_TOKEN').length >= 32 && secret('HASH_SALT').length >= 32 && secret('WORKER_TOKEN').length >= 32 && secret('ADMIN_TOKEN').length >= 32;
 }
+
+// Validated, persistently stored public brand settings. The private admin token
+// is required for writes; none of the secret database configuration is returned.
+const BRAND_DEFAULTS = Object.freeze({
+  brandName:'A-X-HK', brandTagline:'OFFICIAL NETWORK',
+  heroTitle:'Share your community.',heroHighlight:'Grow together.',
+  heroDescription:'Your WhatsApp Group or Channel deserves to be discovered. Share your invite link and connect your community with A-X-HK.',
+  eyebrow:'✦ COMMUNITY DISCOVERY NETWORK ✦',
+  submitTitle:'Share your link',
+  submitDescription:'Paste an invitation link below. Only official WhatsApp invitation URLs are accepted.',
+  submitButton:'Submit & auto-publish link',
+  acceptedTitle:'Link accepted!',
+  acceptedText:'Your link has been submitted. Our bot is publishing it automatically.',
+  postedTitle:'Your link is posted on our Channel!',
+  postedText:'Your invitation is now published. Tap below to check it on our official WhatsApp Channel.',
+  channelButton:'View your link on our Channel ↗',
+  pendingTitle:'Publishing your link…',
+  pendingText:'Your link is in the queue. This screen updates automatically.',
+  channelUrl:'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F',
+  contactNumber:'923044596780',contactLabel:'Chat with Abdullah',
+  founderName:'ABDULLAH-X-HACKER',
+  founderDescription:'Building a connected network of creators, groups and channels.',
+  accentColor:'#a8ffbf', backgroundColor:'#090f0e',surfaceColor:'#121b19',
+  logoData:''
+});
+function validBrand(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Brand settings object required');
+  const clean={...BRAND_DEFAULTS};
+  const textLimits={
+    brandName:45,brandTagline:50,heroTitle:100,heroHighlight:100,
+    heroDescription:450,eyebrow:100,submitTitle:80,submitDescription:260,
+    submitButton:80,acceptedTitle:100,acceptedText:260,postedTitle:100,
+    postedText:260,channelButton:85,pendingTitle:100,pendingText:250,
+    contactLabel:65,founderName:90,founderDescription:260
+  };
+  for(const [key,max] of Object.entries(textLimits)){
+    if(body[key]!==undefined){
+      if(typeof body[key]!=='string' || body[key].length>max) throw new Error('Invalid branding field: '+key);
+      clean[key]=body[key].trim();
+    }
+  }
+  for(const key of ['accentColor','backgroundColor','surfaceColor']){
+    if(body[key]!==undefined){
+      if(typeof body[key]!=='string'||!/^#[0-9a-fA-F]{6}$/.test(body[key])) throw new Error('Invalid color: '+key);
+      clean[key]=body[key];
+    }
+  }
+  if(body.contactNumber!==undefined){
+    if(!/^[0-9]{10,16}$/.test(body.contactNumber)) throw new Error('Contact number must include country code and digits only');
+    clean.contactNumber=body.contactNumber;
+  }
+  if(body.channelUrl!==undefined){
+    const parsed=canonicalLink(body.channelUrl);
+    if(parsed.kind!=='channel') throw new Error('Enter a valid WhatsApp Channel link');
+    clean.channelUrl=parsed.link;
+  }
+  if(body.logoData!==undefined){
+    const logo=body.logoData;
+    if(typeof logo!=='string'||logo.length>240000|| (logo && !/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/]+=*$/.test(logo)))
+      throw new Error('Logo must be a compressed JPG/PNG/WebP image under 180 KB');
+    clean.logoData=logo;
+  }
+  return clean;
+}
+async function readBrand(){
+  const saved=await rpc('axhk_brand_get',{});
+  return validBrand({...BRAND_DEFAULTS,...(saved&&typeof saved==='object'&&!Array.isArray(saved)?saved:{})});
+}
+
 const uuidRe = /^[a-f0-9-]{36}$/i;
 export default async function handler(req, res) {
   const mode = String(req.query?.mode || '');
@@ -81,6 +150,11 @@ export default async function handler(req, res) {
     }
     const submissionsOpen = submissionsRequested && workerReady;
     return send(res, 200, { ok: true, configured, databaseConnected, workerReady, submissionsOpen, ready: configured && databaseConnected && submissionsOpen });
+  }
+  if (req.method === 'GET' && mode === 'brand') {
+    if(!ensureConfigured()) return send(res,200,{ok:true,branding:BRAND_DEFAULTS});
+    try{return send(res,200,{ok:true,branding:await readBrand()});}
+    catch(error){console.error('Brand settings unavailable',error?.message);return send(res,200,{ok:true,branding:BRAND_DEFAULTS});}
   }
   if (!ensureConfigured()) return send(res, 503, { error: 'Channel Link Hub is not configured yet' });
   try {
@@ -142,6 +216,18 @@ export default async function handler(req, res) {
       }
     }
     if (mode === 'admin' && auth(req, 'ADMIN_TOKEN')) {
+      if(req.method==='GET'&&req.query?.action==='brand'){
+        return send(res,200,{ok:true,branding:await readBrand()});
+      }
+      if(req.method==='POST'&&req.body?.action==='saveBrand'){
+        if(!originAllowed(req)) return send(res,403,{error:'Origin not allowed'});
+        let branding;
+        try{branding=validBrand(req.body?.branding);}
+        catch(error){return send(res,400,{error:error.message});}
+        const saved=await rpc('axhk_brand_save',{p_settings:branding});
+        return send(res,saved===true?200:503,{ok:saved===true,branding});
+      }
+
       if (req.method === 'POST' && req.body?.action === 'submit') {
         if (!originAllowed(req)) return send(res, 403, { error: 'Origin not allowed' });
         if (secret('CHANNEL_HUB_ENABLED') !== 'true' || await rpc('axhk_worker_ready', {}) !== true)
