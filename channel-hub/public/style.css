@@ -55,3 +55,28 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 @media(max-width:800px){.axhk-founder{flex-wrap:wrap}.axhk-founder-cta{margin-left:auto}.axhk-hero h1{font-size:clamp(40px,7.8vw,60px)}}
 @media(max-width:520px){.axhk-hero{padding-top:28px}.axhk-hero-art{height:115px}.axhk-hero-ring{height:110px;width:110px}.axhk-hero-monogram{top:36px}.axhk-hero h1{font-size:40px}.axhk-hero .lead{font-size:14px}.axhk-hero-ctas{display:grid;grid-template-columns:1fr;gap:9px}.axhk-founder{gap:15px;padding:22px}.axhk-founder-mark{width:58px;height:58px;flex-basis:58px;font-size:18px}.axhk-founder-body{flex-basis:calc(100% - 74px)}.axhk-founder-cta{width:100%;margin:0}.axhk-contact{width:56px;height:56px;right:17px;bottom:20px}.axhk-contact-label{display:none}.axhk-channel-link{font-size:11px;padding:10px 12px}.topbar{gap:8px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.axhk-contact,.axhk-hero-ring,.axhk-hero-ring::before{animation:none!important}.axhk-reveal-ready{opacity:1;transform:none;transition:none}.axhk-main-cta,.axhk-ghost-cta,.axhk-channel-link{transition:none}}
+
+/* Custom A-X-HK branding and owner editor */
+.brand-mark.brand-image{width:47px;height:47px;flex:0 0 47px;overflow:hidden;background:#060606;border:1px solid rgba(255,255,255,.17);border-radius:13px;box-shadow:0 6px 25px rgba(226,46,53,.16);padding:0}
+.brand-image img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+.brand-image .logo-fallback{display:none}
+.channel-visit-button{margin-top:18px;text-decoration:none;gap:12px;justify-content:space-between;padding:0 18px;min-height:58px;height:auto}
+.channel-button-note{margin:12px 0 0!important;font-size:12px!important;color:var(--muted)}
+.submitted.is-posted{border-color:rgba(168,255,191,.52);background:linear-gradient(130deg,rgba(27,72,42,.6),#0b1c12)}
+.submitted.is-posted .success-mark{box-shadow:0 0 23px rgba(168,255,191,.25)}
+.branding-editor{margin-top:22px}
+.brand-editor-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:23px}
+.brand-logo-editor{display:flex;gap:22px;align-items:center;background:rgba(0,0,0,.19);border:1px solid var(--border);border-radius:17px;padding:20px;margin:20px 0 27px}
+.brand-logo-editor img{width:88px;height:88px;object-fit:cover;flex:none;border-radius:19px;border:1px solid rgba(255,255,255,.2)}
+.brand-logo-copy{min-width:0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.brand-logo-copy>strong,.brand-logo-copy>p{flex:0 0 100%;margin:0}
+.brand-logo-copy p{font-size:12px;color:var(--muted)}
+.branding-upload{display:inline-flex!important;align-items:center;justify-content:center;letter-spacing:0;cursor:pointer!important;font-weight:700;font-size:12px;text-transform:none;margin:0}
+.brand-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px;margin:18px 0 26px}
+.brand-editor-grid label{font-size:11px;letter-spacing:.03em;text-transform:none;margin:0;min-width:0;display:flex;flex-direction:column;gap:9px}
+.brand-editor-grid .wide{grid-column:1/-1}
+.brand-editor-grid input:not([type="color"]),.brand-editor-grid textarea{width:100%;border:1px solid #365141;border-radius:12px;background:#07110d;padding:14px;color:#f4faf6;outline:none;font:500 13px/1.5 'DM Sans',system-ui,sans-serif;letter-spacing:normal;resize:vertical}
+.brand-editor-grid input:focus,.brand-editor-grid textarea:focus{border-color:var(--mint);box-shadow:0 0 0 3px rgba(168,255,191,.12)}
+.brand-editor-grid input[type="color"]{border:1px solid #365141;appearance:none;border-radius:10px;background:#07110d;width:100%;height:48px;padding:6px;cursor:pointer}
+#brandSave{margin-top:12px}
+@media(max-width:640px){.brand-editor-grid{grid-template-columns:1fr;gap:13px}.brand-editor-grid .wide{grid-column:auto}.brand-logo-editor{align-items:flex-start;gap:13px;padding:14px}.brand-logo-editor img{height:64px;width:64px;border-radius:13px}.brand-logo-copy{gap:8px}.brand-logo-copy .button-secondary{font-size:11px;padding:9px}.branding-editor{padding:23px 17px}.brand-editor-actions .button-secondary{margin:0}}
