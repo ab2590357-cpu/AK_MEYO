@@ -219,3 +219,17 @@ test('premium post positions the brand below divider and leaves a blank line abo
     assert.match(text,/Premium Community/);
   }
 });
+
+test('Channel preview resolves nested newsletter name when metadata API uses thread_metadata',async()=>{
+ const item={kind:'channel',link:'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F'};
+ const message=await buildChannelLinkMessage({
+   newsletterMetadata:async(type,code)=>{
+     assert.equal(type,'invite');
+     assert.equal(code,'0029VbA4HK9LNSaApTeufD1F');
+     return {result:{id:'123456789012345@newsletter',thread_metadata:{name:{text:'Premium Creator Channel'}}}};
+   }
+ },item);
+ assert.equal(message.linkPreview.title,'Premium Creator Channel');
+ assert.equal(message.linkPreview.description,'WhatsApp Channel');
+ assert.match(message.text,/Premium Creator Channel/);
+});
