@@ -1,0 +1,1 @@
+(()=>{const link=document.createElement('a');link.href='https://wa.me/923044596780';link.target='_blank';link.rel='noopener noreferrer';link.className='axhk-contact';link.setAttribute('aria-label','Contact Abdullah on WhatsApp');link.textContent='WhatsApp';document.body.append(link)})();
