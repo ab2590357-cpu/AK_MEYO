@@ -85,7 +85,7 @@ test('published Group invite has Group heading and official website attribution'
   const text=formatChannelLinkPost({kind:'group',link:'https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST'});
   assert.match(text,/WhatsApp Group/);
   assert.doesNotMatch(text,/WhatsApp Channel/);
-  assert.match(text,/A-X-HK Website/);
+  assert.match(text,/SUBMIT YOUR GROUP OR CHANNEL/);
   assert.ok(text.includes(LINK_HUB_WEBSITE));
   assert.match(text,/chat\.whatsapp\.com/);
 });
@@ -93,7 +93,7 @@ test('published Channel invite has Channel heading and official website attribut
   const text=formatChannelLinkPost({kind:'channel',link:'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F'});
   assert.match(text,/WhatsApp Channel/);
   assert.doesNotMatch(text,/WhatsApp Group/);
-  assert.match(text,/A-X-HK Website/);
+  assert.match(text,/SUBMIT YOUR GROUP OR CHANNEL/);
   assert.ok(text.includes(LINK_HUB_WEBSITE));
   assert.throws(()=>formatChannelLinkPost({kind:'group',link:'https://evil.example/other'}));
 });
