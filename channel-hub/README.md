@@ -78,3 +78,45 @@ Database migration was applied in Supabase project wwehfusaimzrkztdfccz; Vercel 
 - Ordinary menu requests never publish to the Channel. Channel Link Hub public submission queue stays off until actual admin-owned Channel posting is verified.
 - Verify: AXHK_TERMUX_MODE=1 node --test tests/channel-menu.test.mjs and AXHK_TERMUX_MODE=1 node scripts/termux-smoke.mjs.
 - Preserve saved WhatsApp credentials; never delete the session folder or run Unlink & Reset.
+
+
+## Activation after verified Channel posting — November 2026
+
+The public website is configured for live mode, but MUST stay unavailable until an authenticated
+Termux worker provides a fresh heartbeat and verifies the owner successfully published a
+real Channel menu message (the source of genuine forwarded menu replies). There is no
+fake View Channel label and the bot must never post random test messages without the
+owner's approval.
+
+1. In the owner's Termux shell, pull the feature branch and run the Channel Hub tests.
+2. Open the **Vercel** project axhk-channel-link-hub / Settings / Environment Variables.
+   Find WORKER_TOKEN. Copy the existing value securely inside your own phone; never
+   paste it into public chats, screenshots, GitHub, WhatsApp, or support tickets.
+3. Stop the Termux bot with Ctrl+C, run: `node scripts/channel-hub-setup.mjs`.
+   This prompts privately for the existing WORKER_TOKEN; paste once and press Enter.
+   The script writes local .env using mode 0600 and preserves other variables. It
+   configures the correct deployed HTTPS API URL, original Channel invite code, and
+   enables outbound polling. It does **not** start an unverified public submission.
+4. Restart the bot:
+   `AXHK_TERMUX_MODE=1 BOT_PREFIX=. MULTI_PAIR_ENABLED=false npm start`
+   and verify WhatsApp remains connected; do not unlink or re-pair unnecessarily.
+5. From the authorized owner's WhatsApp private chat, run `.channelmenu status`, then
+   `.channelmenu publish` **once**. The second command publishes a real menu image
+   to the owner-controlled Channel. Open the actual Channel to confirm that post exists.
+6. From the same owner's WhatsApp, run `.menu`, `.channel`, `.submitlink` and `.links`.
+   Confirm direct Channel URL and A-X-HK Link Hub URL are correct. The native
+   View Channel attribution is determined by WhatsApp and must be tested.
+7. Check the public webpage and `/api/index?mode=health`:
+   `workerReady:true` and `submissionsOpen:true` mean the verified Termux worker is
+   online and public submissions can open. If Termux sleeps, crashes or loses WhatsApp,
+   submissions close after the 40-second heartbeat deadline, rather than silently queueing.
+8. Submit ONE real WhatsApp invitation through the form. The worker polls about every
+   8 seconds when connected. Verify the Channel contains the posted invitation AND
+   the website receipt moves from Pending to Published. Unofficial Baileys Channel
+   support is not guaranteed by Meta and can break.
+9. Keep the phone's battery background use unrestricted for Termux; a data connection
+   alone does not guarantee its Node process will stay alive.
+
+If posting fails, leave auto-submissions closed, check the owner panel for the failed
+receipt, and inspect the terminal logs (redact secrets). Avoid repeated retries after
+an uncertain WhatsApp acknowledgement to prevent duplicate Channel posts.
