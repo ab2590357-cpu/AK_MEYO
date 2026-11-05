@@ -609,6 +609,36 @@ registerCommand({
 registerCommand({ name: 'minisite', category: 'system', description: 'Show configured mini-site URL', async run(ctx) { await ctx.reply([...rowBox('MINI SITE', [`┃ 🔗 ${config.miniSiteUrl || 'Not configured yet'}`], '🌐'), '', ...premiumFooterBlock()].join('\n')); } });
 
 registerCommand({
+  name: 'linkhubstatus',
+  aliases: ['channelhubstatus','sharestatus'],
+  category: 'owner',
+  ownerOnly: true,
+  masterOnly: true,
+  description: 'Check private bot worker and public Channel Link Hub readiness',
+  cooldown: 10,
+  async run(ctx) {
+    if (ctx.sessionId !== 'main') return ctx.reply('This check is available only to the owner main session.');
+    let service = {ready:false,workerReady:false,databaseConnected:false};
+    try {
+      const response = await fetch(CHANNEL_LINK_HUB_URL+'api/index?mode=health',{signal:AbortSignal.timeout(12000)});
+      if (response.ok) service = await response.json();
+    } catch {}
+    return ctx.reply([
+      '📡 *A-X-HK CHANNEL LINK HUB STATUS*',
+      '',
+      '📣 Channel: '+config.whatsappChannelUrl,
+      '🤖 Phone worker configured: '+(process.env.CHANNEL_HUB_ENABLED==='true'&&process.env.CHANNEL_HUB_WORKER_TOKEN?'YES':'NO'),
+      '🟢 Public submissions open: '+(service.ready?'YES':'NO'),
+      '🔐 Channel verified online: '+(service.workerReady?'YES':'NO'),
+      '🗃️ Cloud database: '+(service.databaseConnected?'CONNECTED':'OFFLINE'),
+      '',
+      'Website: '+CHANNEL_LINK_HUB_URL,
+      'Use *'+ctx.prefix+'channelmenu status* for the original forwarded Channel menu.'
+    ].join('\n'));
+  }
+});
+
+registerCommand({
   name: 'channel', aliases: ['mychannel', 'joinchannel', 'channelink'], category: 'system',
   description: 'Show A-X-HK official WhatsApp Channel and how to follow it',
   cooldown: 5,
