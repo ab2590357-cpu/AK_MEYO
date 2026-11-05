@@ -17,8 +17,12 @@ test('non-owner cannot publish a Channel menu', async () => {
   await assert.rejects(()=>publishChannelMenu({isMasterOwnerAction:false,sessionId:'main'}),/Only Abdullah/);
   await assert.rejects(()=>publishChannelMenu({isMasterOwnerAction:true,sessionId:'public'}),/Only Abdullah/);
 });
-test('Termux accepts a JPEG unchanged and rejects incompatible PNG data',async()=>{
-  const jpeg=Buffer.from([0xff,0xd8,0xff,0xe0,1,2,3,4,0xff,0xd9]);
-  assert.deepEqual(await normalizeMenuCard(jpeg),jpeg);
-  await assert.rejects(()=>normalizeMenuCard(Buffer.from([137,80,78,71,13,10,26,10])),/JPG\/JPEG/);
+test('Termux accepts valid PNG menu and rejects incomplete pretend JPEG', async()=>{
+  const png = Buffer.from([
+    137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,
+    0,0,0,64,0,0,0,64,8,6,0,0,0,0,0,0,0
+  ]);
+  assert.deepEqual(await normalizeMenuCard(png),png);
+  const incomplete=Buffer.from([0xff,0xd8,0xff,0xe0,1,2,3,4,0xff,0xd9]);
+  await assert.rejects(()=>normalizeMenuCard(incomplete),/valid JPG/);
 });
