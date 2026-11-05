@@ -37,5 +37,7 @@ jobs:
           node --check lib/services/link-logo.js
           node --check lib/services/menu-card.js
           node --check lib/utils/image-assets.js
+          node --check lib/public/assets/app.js
+          node --check plugins/core/system.js
       - name: Run Channel Hub regression tests
         run: AXHK_TERMUX_MODE=1 node --test tests/channel-hub-api.test.mjs tests/channel-hub-worker.test.mjs tests/channel-menu.test.mjs tests/dashboard-image-upload.test.mjs
