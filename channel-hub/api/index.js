@@ -142,6 +142,21 @@ export default async function handler(req, res) {
       }
     }
     if (mode === 'admin' && auth(req, 'ADMIN_TOKEN')) {
+      if (req.method === 'POST' && req.body?.action === 'submit') {
+        if (!originAllowed(req)) return send(res, 403, { error: 'Origin not allowed' });
+        if (secret('CHANNEL_HUB_ENABLED') !== 'true' || await rpc('axhk_worker_ready', {}) !== true)
+          return send(res, 503, { error: 'Bot is offline or Channel is not verified' });
+        const { link, kind } = canonicalLink(req.body?.link);
+        const receipt = crypto.randomBytes(32).toString('hex');
+        const result = await rpc('axhk_admin_submit_link', {
+          p_link: link, p_kind: kind,
+          p_actor_hash: hash('owner:channel-hub'),
+          p_receipt_hash: hash('receipt:' + receipt)
+        });
+        return send(res, result?.accepted ? 200 : 409,
+          result?.accepted ? { ok: true, id: result.id, receipt, kind, status:'pending' }
+                           : { ok: false, error: result?.error || 'Owner submission not accepted' });
+      }
       if (req.method === 'GET') {
         const rows = await supabase('axhk_channel_submissions?select=id,link,kind,status,created_at,posted_at,attempts,last_error&order=created_at.desc&limit=60');
         return send(res, 200, { ok: true, submissions: rows });
