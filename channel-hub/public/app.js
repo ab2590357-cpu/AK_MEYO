@@ -42,6 +42,26 @@ async function poll(){
     const data=await response.json();
     if(response.ok){
       statusEl.textContent=statuses[data.status]||data.status;
+      const brand=window.AXHK_BRAND||{};
+      const heading=document.querySelector('#submissionHeading');
+      const copy=document.querySelector('#submissionCopy');
+      const label=document.querySelector('#visitChannelLabel');
+      const note=document.querySelector('#channelButtonNote');
+      if(data.status==='posted'){
+        heading.textContent=brand.postedTitle||'Your link is posted on our Channel!';
+        copy.textContent=brand.postedText||'Your link is now published. Tap below to check it on our official WhatsApp Channel.';
+        label.textContent=brand.channelButton||'View your link on our Channel ↗';
+        note.textContent='WhatsApp opens our Channel; the link may be among the recent updates.';
+        document.querySelector('#submitted').classList.add('is-posted');
+      }else if(['failed','rejected','needs_review'].includes(data.status)){
+        heading.textContent='Your link needs attention';
+        copy.textContent='The Channel posting has not been confirmed. Please check this status or contact the owner.';
+        note.textContent='You can still open the Channel, but this submission is not marked as published.';
+      }else{
+        heading.textContent=brand.pendingTitle||'Publishing your link…';
+        copy.textContent=brand.pendingText||'Your link is in the queue. This screen updates automatically.';
+        note.textContent='Open the Channel to see recent updates; this submission is not yet confirmed as posted.';
+      }
       if(['posted','failed','rejected','needs_review'].includes(data.status)){
         clearInterval(pollHandle);pollHandle=null;
       }
@@ -50,6 +70,11 @@ async function poll(){
 }
 function showSubmission(){
   form.classList.add('hidden');view.classList.remove('hidden');
+  const brand=window.AXHK_BRAND||{};
+  document.querySelector('#submissionHeading').textContent=brand.acceptedTitle||'Link accepted!';
+  document.querySelector('#submissionCopy').textContent=brand.acceptedText||'Your link has been submitted. Our bot is publishing it automatically.';
+  document.querySelector('#visitChannel').href=brand.channelUrl||'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F';
+  document.querySelector('#visitChannelLabel').textContent='Open our WhatsApp Channel ↗';
   renderCountdown();poll();
   clearInterval(pollHandle);clearInterval(clockHandle);
   pollHandle=setInterval(poll,3000);
