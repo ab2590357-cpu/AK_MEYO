@@ -560,6 +560,7 @@ registerCommand({
   cooldown: 3,
   async run(ctx) {
     await sendOwnerCard(ctx, OWNER_PROFILE);
+    await forwardChannelMenu(ctx, {requireBranded:true});
   }
 });
 
