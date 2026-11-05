@@ -88,7 +88,6 @@ export default async function handler(req, res) {
       if (secret('CHANNEL_HUB_ENABLED') !== 'true') return send(res, 503, { error: 'Submissions are not open yet' });
       const workerReady = await rpc('axhk_worker_ready', {});
       if (workerReady !== true) return send(res, 503, { error: 'Our WhatsApp Channel bot is offline or not verified. Please try again when it is online.' });
-      if ((await rpc('axhk_worker_ready', {})) !== true) return send(res, 503, { error: 'Posting bot is temporarily offline. Please try again when it reconnects.' });
       if (!originAllowed(req)) return send(res, 403, { error: 'Origin not allowed' });
       if (req.body?.website) return send(res, 400, { error: 'Submission rejected' }); // honeypot
       const { link, kind } = canonicalLink(req.body?.link);
@@ -114,23 +113,16 @@ export default async function handler(req, res) {
       return send(res, 200, { ok: true, id: x.id, status: x.status, kind: x.kind, createdAt: x.created_at, postedAt: x.posted_at || null, note: x.status === 'failed' ? 'Posting failed. Owner can review and retry.' : undefined });
     }
     if (mode === 'heartbeat' && req.method === 'POST' && auth(req, 'WORKER_TOKEN')) {
+      if (secret('CHANNEL_HUB_ENABLED') !== 'true') return send(res,503,{error:'Worker disabled'});
       const jid = String(req.body?.channelJid || '');
       const verified = req.body?.verified === true;
-      if (!/^[0-9]{10,30}@newsletter$/.test(jid)) return send(res, 400, { error: 'Invalid Channel JID' });
-      const ok = await rpc('axhk_record_worker_heartbeat', {p_channel_jid:jid, p_verified:verified});
-      return send(res,ok?200:503,{ok:Boolean(ok)});
+      if (!/^[0-9]{10,30}@newsletter$/.test(jid)) return send(res,400,{error:'Invalid Channel JID'});
+      const ok = await rpc('axhk_record_worker_heartbeat',{p_channel_jid:jid,p_verified:verified});
+      return send(res,ok===true?200:503,{ok:ok===true});
     }
     if (mode === 'worker' && auth(req, 'WORKER_TOKEN')) {
       if (req.method === 'GET' && req.query?.action === 'verify') {
         return send(res,200,{ok:true,workerAuthenticated:true,submissionsEnabled:secret('CHANNEL_HUB_ENABLED')==='true'});
-      }
-      if (req.method === 'POST' && req.body?.action === 'heartbeat') {
-        if (secret('CHANNEL_HUB_ENABLED') !== 'true') return send(res, 503, { error: 'Worker channel service not active yet' });
-        const jid = String(req.body?.channelJid || '');
-        const verified = req.body?.verified === true;
-        if (!verified || !/^[0-9]{10,30}@newsletter$/.test(jid)) return send(res, 400, { error: 'Channel is not verified by the owner bot' });
-        const ok = await rpc('axhk_record_worker_heartbeat', {p_channel_jid:jid,p_verified:verified});
-        return send(res,ok===true?200:409,{ok:ok===true});
       }
       if (req.method === 'GET') {
         if (secret('CHANNEL_HUB_ENABLED') !== 'true' || await rpc('axhk_worker_ready', {}) !== true)
