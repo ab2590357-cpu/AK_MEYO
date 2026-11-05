@@ -7,7 +7,7 @@ import { db } from '../../lib/core/database.js';
 import { formatUptime, sleep } from '../../lib/utils/text.js';
 import { serifBold, premiumLabel, premiumTitle } from '../../lib/utils/brand-style.js';
 import { readMenuCard } from '../../lib/services/menu-card.js';
-import { publishChannelMenu, channelMenuPostStatus, forwardChannelMenu, disableChannelMenuForward, CHANNEL_URL } from '../../lib/services/channel-menu.js';
+import { publishChannelMenu, channelMenuPostStatus, forwardChannelMenu, disableChannelMenuForward, buildChannelMenuAnnouncement, CHANNEL_URL } from '../../lib/services/channel-menu.js';
 import { waManager } from '../../lib/services/whatsapp.js';
 import { OWNER_PROFILE } from '../../lib/core/owner-profile.js';
 import { sendOwnerCard } from '../../lib/services/premium-experience.js';
@@ -262,17 +262,26 @@ function menuChannelFooter() {
 
 async function sendMenuCard(ctx, caption) {
   const withChannel = String(caption) + menuChannelFooter();
-  // An authentic WhatsApp Channel forward can only originate from a real
-  // previously published Channel message. Never fabricate newsletter metadata.
-  if (await forwardChannelMenu(ctx)) {
-    return ctx.send({ text: withChannel }, { quoted: ctx.msg });
-  }
+  // A genuine owner-published premium Channel menu contains its own image and
+  // command listing. Forward it as ONE native Channel card, not a forwarded
+  // post followed by an unrelated giant text reply. Preserve a normal menu
+  // fallback for users whose WhatsApp client does not display the forward.
+  if (await forwardChannelMenu(ctx, {requireBranded:true})) return;
   try {
     const { buffer: image } = await readMenuCard();
     return await ctx.send({ image, caption: withChannel }, { quoted: ctx.msg });
   } catch {
     return ctx.reply(withChannel);
   }
+}
+
+async function sendChannelLinkedCard(ctx, caption) {
+  // Used for status/ping: the live status stays current and a separate
+  // authentic Channel forward supplies native View Channel when available.
+  // Never invent quoted newsletter metadata or publish a post on .ping.
+  const text = String(caption) + menuChannelFooter();
+  await ctx.reply(text);
+  await forwardChannelMenu(ctx, {requireBranded:true});
 }
 
 async function sendBrandCard(ctx, caption) {
@@ -388,7 +397,9 @@ registerCommand({
     if (mode === 'status') {
       const stored = await channelMenuPostStatus();
       return ctx.reply(stored
-        ? '✅ Real Channel menu post saved. .menu will forward the published post, then send the current commands.\n📣 ' + CHANNEL_URL
+        ? (stored.isBranded
+           ? '✅ Branded Channel menu post saved. .menu will forward its original image, caption and native View Channel link.\n📣 ' + CHANNEL_URL
+           : '⚠️ An older Channel post is saved, but does not contain the premium menu image/caption. Use ' + ctx.prefix + 'channelmenu publish after the one-hour repost limit to upgrade.')
         : 'ℹ️ No published Channel menu saved yet. .menu currently sends the brand image and link normally.\nTo publish once as admin: ' + ctx.prefix + 'channelmenu publish');
     }
     if (mode === 'disable') {
@@ -396,7 +407,12 @@ registerCommand({
       return ctx.reply('✅ Genuine Channel forwarding disabled; standard image menu restored. No Channel posts were deleted.');
     }
     if (mode !== 'publish') return ctx.reply('Usage: ' + ctx.prefix + 'channelmenu status|publish|disable');
-    const posted = await publishChannelMenu(ctx);
+    const posted = await publishChannelMenu(ctx, {
+      caption:buildChannelMenuAnnouncement({
+        prefix:ctx.prefix,
+        categories:Object.keys(commandsByCategory())
+      })
+    });
     return ctx.reply('✅ Menu image published to your actual WhatsApp Channel, and original post saved for authentic forwarding.\n📣 ' + CHANNEL_URL + '\n\nNow use ' + ctx.prefix + 'menu to test its appearance. Native View Channel presentation depends on WhatsApp.');
   }
 });
@@ -445,10 +461,11 @@ function statusClock() {
 async function sendAliveCard(ctx, caption) {
   try {
     const { buffer: image } = await readMenuCard();
-    return await ctx.send({ image, caption }, { quoted: ctx.msg });
+    await ctx.send({ image, caption: String(caption) + menuChannelFooter() }, { quoted: ctx.msg });
   } catch {
-    return ctx.reply(caption);
+    await ctx.reply(String(caption) + menuChannelFooter());
   }
+  await forwardChannelMenu(ctx, {requireBranded:true});
 }
 
 registerCommand({
@@ -492,7 +509,7 @@ registerCommand({
     try { await ctx.send({ react: { text: '⚡', key: ctx.msg.key } }); } catch {}
     const ms = Math.max(1, Math.round(performance.now() - start));
     const mem = process.memoryUsage();
-    await ctx.reply([
+    await sendChannelLinkedCard(ctx, [
       premiumTitle(`${config.shortName} PONG`, '⚡', '✨'), '',
       premiumLabel('SEND LATENCY', `${ms} ms`, '🚀'), '',
       premiumLabel('UPTIME', formatUptime(process.uptime()), '⏱️'), '',
