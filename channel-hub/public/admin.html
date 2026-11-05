@@ -1,13 +1,61 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>A-X-HK | Channel Hub Admin</title><link rel="stylesheet" href="/style.css"></head>
-<body><header class="topbar"><a class="brand" href="/"><span class="brand-mark">A</span><span>A-X-HK <small>CHANNEL HUB / ADMIN</small></span></a><a href="/">Public page ↗</a></header><main style="max-width:1060px"><section class="intro"><div class="eyebrow">OWNER CONSOLE</div><h1 style="font-size:clamp(38px,6vw,65px)">Channel <em>control</em>.</h1><p class="lead">Owner-only submissions monitor. Use the ADMIN_TOKEN configured in Vercel. It is not saved by this page.</p></section>
-<section class="panel submit-panel"><label for="token">ADMIN ACCESS TOKEN</label><div class="input-shell"><input id="token" type="password" autocomplete="off" placeholder="Paste your private admin token"></div><button class="button-primary" id="load" style="margin-top:15px">Load submissions <span>↗</span></button><p id="note" role="status" class="message"></p><div style="overflow:auto;margin-top:20px"><table style="width:100%;border-collapse:collapse;text-align:left;font-size:12px"><thead><tr><th>Submitted</th><th>Link</th><th>Status</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div></section><section class="panel submit-panel"><h2>Owner link publisher</h2><p>Unlimited owner submissions, independent of the public 12-hour cooldown.</p><form id="ownerSubmit"><label for="ownerLink">Group or Channel invite link</label><div class="input-shell"><input id="ownerLink" type="url" required placeholder="https://chat.whatsapp.com/..."></div><button class="button-primary" type="submit" id="ownerButton" style="margin-top:12px">Publish link through bot</button><p id="ownerStatus" class="message" role="status"></p></form></section></main>
+<body><header class="topbar"><a class="brand" href="/"><span class="brand-mark brand-image"><img src="/axhk-logo.webp" alt="A-X-HK logo"></span><span>A-X-HK <small>CHANNEL HUB / ADMIN</small></span></a><a href="/">Public page ↗</a></header><main style="max-width:1060px"><section class="intro"><div class="eyebrow">OWNER CONSOLE</div><h1 style="font-size:clamp(38px,6vw,65px)">Channel <em>control</em>.</h1><p class="lead">Owner-only submissions monitor. Use the ADMIN_TOKEN configured in Vercel. It is not saved by this page.</p></section>
+<section class="panel submit-panel"><label for="token">ADMIN ACCESS TOKEN</label><div class="input-shell"><input id="token" type="password" autocomplete="off" placeholder="Paste your private admin token"></div><button class="button-primary" id="load" style="margin-top:15px">Load submissions <span>↗</span></button><p id="note" role="status" class="message"></p><div style="overflow:auto;margin-top:20px"><table style="width:100%;border-collapse:collapse;text-align:left;font-size:12px"><thead><tr><th>Submitted</th><th>Link</th><th>Status</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div></section><section class="panel submit-panel"><h2>Owner link publisher</h2><p>Unlimited owner submissions, independent of the public 12-hour cooldown.</p><form id="ownerSubmit"><label for="ownerLink">Group or Channel invite link</label><div class="input-shell"><input id="ownerLink" type="url" required placeholder="https://chat.whatsapp.com/..."></div><button class="button-primary" type="submit" id="ownerButton" style="margin-top:12px">Publish link through bot</button><p id="ownerStatus" class="message" role="status"></p></form></section>
+<section class="panel submit-panel branding-editor">
+  <div class="section-number">BRANDING STUDIO / LIVE WEBSITE</div>
+  <h2>Website Brand Editor</h2>
+  <p class="subline">Edit your logo, colors, headings, descriptions, Channel URL and contact information. Changes save permanently to Supabase and appear on the public site.</p>
+  <div class="brand-editor-actions">
+    <button class="button-secondary" id="brandLoad" type="button">Load Current Settings</button>
+    <a class="button-secondary" href="/" target="_blank" rel="noopener noreferrer">Preview Website ↗</a>
+  </div>
+  <form id="brandEditor">
+    <div class="brand-logo-editor">
+      <img id="brandLogoPreview" src="/axhk-logo.webp" alt="Current website logo" width="88" height="88">
+      <div class="brand-logo-copy">
+        <strong>Premium A-X-HK Logo</strong><p>Upload JPG, PNG or WebP. Image will be optimized in your browser.</p>
+        <label for="brandLogoFile" class="button-secondary branding-upload">Choose New Logo</label>
+        <input type="file" id="brandLogoFile" accept="image/png,image/jpeg,image/webp" hidden>
+        <button class="button-secondary" type="button" id="brandLogoReset">Use Original Logo</button>
+      </div>
+    </div>
+    <div class="brand-editor-grid">
+      <label>Brand Name<input name="brandName" maxlength="45" placeholder="A-X-HK"></label>
+      <label>Brand Tagline<input name="brandTagline" maxlength="50"></label>
+      <label>Eyebrow Text<input name="eyebrow" maxlength="100"></label>
+      <label>Hero Heading<input name="heroTitle" maxlength="100"></label>
+      <label>Hero Highlight<input name="heroHighlight" maxlength="100"></label>
+      <label class="wide">Hero Description<textarea name="heroDescription" maxlength="450" rows="3"></textarea></label>
+      <label>Submission Heading<input name="submitTitle" maxlength="80"></label>
+      <label class="wide">Submission Description<textarea name="submitDescription" maxlength="260" rows="2"></textarea></label>
+      <label>Submission Button<input name="submitButton" maxlength="80"></label>
+      <label>Accepted Heading<input name="acceptedTitle" maxlength="100"></label>
+      <label class="wide">Accepted Description<textarea name="acceptedText" maxlength="260" rows="2"></textarea></label>
+      <label>Pending Heading<input name="pendingTitle" maxlength="100"></label>
+      <label class="wide">Pending Description<textarea name="pendingText" maxlength="250" rows="2"></textarea></label>
+      <label>Published Heading<input name="postedTitle" maxlength="100"></label>
+      <label class="wide">Published Description<textarea name="postedText" maxlength="260" rows="2"></textarea></label>
+      <label>Channel Button Label<input name="channelButton" maxlength="85"></label>
+      <label class="wide">Official WhatsApp Channel URL<input name="channelUrl" type="url" maxlength="220"></label>
+      <label>Contact Number (country code)<input name="contactNumber" inputmode="numeric" maxlength="16"></label>
+      <label>Floating Button Text<input name="contactLabel" maxlength="65"></label>
+      <label>Founder Name<input name="founderName" maxlength="90"></label>
+      <label class="wide">Founder Description<textarea name="founderDescription" maxlength="260" rows="2"></textarea></label>
+      <label>Accent Color<input type="color" name="accentColor" value="#a8ffbf"></label>
+      <label>Background Color<input type="color" name="backgroundColor" value="#090f0e"></label>
+      <label>Card Surface Color<input type="color" name="surfaceColor" value="#121b19"></label>
+    </div>
+    <button type="submit" id="brandSave" class="button-primary" disabled><span>Save Website Changes</span><span>↗</span></button>
+    <p id="brandStatus" class="message" role="status" aria-live="polite">Enter your Admin Token above, then load your settings.</p>
+  </form>
+</section></main>
 <script>
 const $=x=>document.querySelector(x);
 const note=$('#note');
 function text(tag,value){let e=document.createElement(tag);e.textContent=value;return e}
-async function call(method,body){
+async function call(method,body,queryAction){
   const token=$('#token').value.trim();if(!token)throw Error('Enter the admin token');
-  const r=await fetch('/api/index?mode=admin',{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  const r=await fetch('/api/index?mode=admin'+(queryAction?'&action='+encodeURIComponent(queryAction):''),{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
   const d=await r.json();if(!r.ok)throw Error(d.error||'Request failed');return d
 }
 async function load(){
@@ -48,5 +96,77 @@ $('#ownerSubmit').onsubmit=async (event)=>{
   }catch(error){status.textContent=error.message;}
   finally{button.disabled=false;}
 };
+
+let activeBrand=null;
+const brandForm=$('#brandEditor');
+const brandStatus=$('#brandStatus');
+function applyEditor(brand){
+  activeBrand={...brand};
+  for(const item of brandForm.elements){
+    if(!item.name)continue;
+    if(typeof brand[item.name]==='string')item.value=brand[item.name];
+  }
+  $('#brandLogoPreview').src=brand.logoData||'/axhk-logo.webp';
+  $('#brandSave').disabled=false;
+  brandStatus.textContent='Settings loaded. Edit and click Save Website Changes.';
+}
+async function loadBrand(){
+  try{
+    brandStatus.textContent='Loading saved branding...';
+    const result=await call('GET',null,'brand');
+    if(!result.branding)throw new Error('Brand settings unavailable');
+    applyEditor(result.branding);
+  }catch(error){brandStatus.textContent=error.message}
+}
+$('#brandLoad').onclick=loadBrand;
+$('#brandLogoReset').onclick=()=>{
+  if(!activeBrand){brandStatus.textContent='Load your settings first.';return}
+  activeBrand.logoData='';
+  $('#brandLogoPreview').src='/axhk-logo.webp';
+  brandStatus.textContent='Default A-X-HK emblem selected. Save to apply.';
+};
+$('#brandLogoFile').onchange=async event=>{
+  const file=event.target.files?.[0];
+  if(!file)return;
+  if(!activeBrand){brandStatus.textContent='Load your settings before uploading a logo.';return}
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>8*1024*1024){
+    brandStatus.textContent='Choose a JPG, PNG or WebP under 8 MB.';return;
+  }
+  try{
+    const blobUrl=URL.createObjectURL(file);
+    const image=new Image();
+    await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error('Invalid image'));image.src=blobUrl});
+    const scale=Math.min(1,400/Math.max(image.naturalWidth,image.naturalHeight));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+    canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+    canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+    URL.revokeObjectURL(blobUrl);
+    let encoded=canvas.toDataURL('image/webp',.8);
+    if(encoded.length>240000)encoded=canvas.toDataURL('image/jpeg',.66);
+    if(encoded.length>240000)throw Error('Please choose a smaller logo image.');
+    activeBrand.logoData=encoded;
+    $('#brandLogoPreview').src=encoded;
+    brandStatus.textContent='Logo optimized. Save Website Changes to publish it.';
+  }catch(error){brandStatus.textContent=error.message||'Could not read the image.';}
+};
+brandForm.onsubmit=async event=>{
+  event.preventDefault();
+  if(!activeBrand){brandStatus.textContent='Load settings first.';return;}
+  const next={...activeBrand};
+  for(const item of brandForm.elements){
+    if(item.name)next[item.name]=item.value;
+  }
+  const button=$('#brandSave');
+  button.disabled=true;brandStatus.textContent='Saving branding to Supabase...';
+  try{
+    const result=await call('POST',{action:'saveBrand',branding:next});
+    if(!result.ok)throw Error('Could not save branding');
+    applyEditor(result.branding);
+    brandStatus.textContent='✓ All changes saved permanently. Open the public website to see your update.';
+  }catch(error){brandStatus.textContent=error.message||'Save failed';}
+  finally{button.disabled=false;}
+};
+
 $('#load').onclick=load;
 </script></body></html>
