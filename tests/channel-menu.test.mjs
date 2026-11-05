@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 // The smoke checks are side-effect-free; they must never touch WhatsApp.
 process.env.AXHK_TERMUX_MODE = '1';
-const {safeChannelJid,publishChannelMenu,channelMenuPostStatus,CHANNEL_URL} =
+const {safeChannelJid,publishChannelMenu,channelMenuPostStatus,buildChannelMenuAnnouncement,isBrandedChannelMenuMessage,forwardChannelMenu,CHANNEL_URL} =
   await import('../lib/services/channel-menu.js');
 const {normalizeMenuCard} = await import('../lib/services/menu-card.js');
 
@@ -25,4 +25,25 @@ test('Termux accepts valid PNG menu and rejects incomplete pretend JPEG', async(
   assert.deepEqual(await normalizeMenuCard(png),png);
   const incomplete=Buffer.from([0xff,0xd8,0xff,0xe0,1,2,3,4,0xff,0xd9]);
   await assert.rejects(()=>normalizeMenuCard(incomplete),/valid JPG/);
+});
+
+test('genuine premium Channel menu caption stays inside media limits',()=>{
+ const caption=buildChannelMenuAnnouncement({prefix:'.',categories:['ai','tools','utility','productivity','entertainment','media','owner','system','group','download','fun','games','settings','security','premium','profile','romantic','reaction','cute','emotion','actions','text','document','search','funny','funtext']});
+ assert.ok(caption.length<1024);
+ assert.match(caption,/A-X-HK PREMIUM MENU/);
+ assert.match(caption,/\.menu all/);
+ assert.match(caption,/\.alive/);
+ assert.match(caption,/\.ping/);
+ assert.match(caption,/whatsapp.com\/channel/);
+});
+test('only original image-and-caption menu update qualifies for native premium forward',()=>{
+ const caption=buildChannelMenuAnnouncement();
+ assert.equal(isBrandedChannelMenuMessage({message:{imageMessage:{caption}}}),true);
+ assert.equal(isBrandedChannelMenuMessage({message:{extendedTextMessage:{text:caption}}}),false);
+ assert.equal(isBrandedChannelMenuMessage({message:{imageMessage:{caption:'old caption'}}}),false);
+});
+test('premium forward does not send anything when owner session is absent',async()=>{
+ let count=0;
+ assert.equal(await forwardChannelMenu({sessionId:'linked',send:()=>{count++;},sock:{}}),false);
+ assert.equal(count,0);
 });
