@@ -120,3 +120,31 @@ owner's approval.
 If posting fails, leave auto-submissions closed, check the owner panel for the failed
 receipt, and inspect the terminal logs (redact secrets). Avoid repeated retries after
 an uncertain WhatsApp acknowledgement to prevent duplicate Channel posts.
+
+
+## Production activation — verified worker gating (November 2026)
+
+Production public URL: https://axhk-channel-link-hub.vercel.app/
+Official destination: https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F
+
+The Vercel project has CHANNEL_HUB_ENABLED=true, but **submissions remain disabled unless the private authenticated owner worker is online and has verified a real owner-published post to this Channel**. The public health endpoint at /api/index?mode=health reports workerReady, databaseConnected, and submissionsOpen. Do not claim live operation until workerReady=true AND a real submission appears on the target Channel.
+
+One-time Android setup:
+1. Stop the running Termux bot gracefully with Ctrl+C. Do NOT Unlink/Reset the WhatsApp session.
+2. `cd ~/AK_MEYO && git pull --ff-only`
+3. `node scripts/channel-hub-setup.mjs`. In the private prompt paste WORKER_TOKEN from the A-X-HK Vercel project's protected Settings -> Environment Variables. The script checks the token remotely before writing only a 0600 .env file. Never paste worker/admin tokens in chats or commit them.
+4. Restart: `AXHK_TERMUX_MODE=1 BOT_PREFIX=. MULTI_PAIR_ENABLED=false npm start`
+5. In the already linked owner WhatsApp chat, send `.channelmenu status`. Confirm your custom menu image exists. Then send `.channelmenu publish` once (this is a real post to your actual Channel; check the Channel before retrying). If successful it serves as the owner verification source.
+6. Type `.linkhubstatus` to see whether Cloud DB CONNECTED, Channel verified online YES, and Public submissions open YES. The website should enable its submission button automatically within a few heartbeat intervals.
+7. From another browser/device, submit a benign, valid owned WhatsApp Group invite link. Confirm that the website transitions Pending to Published and that the actual post appears in the owned Channel. If a send is ambiguous, check Channel and admin queue before retrying; never blindly resend.
+8. Termux needs continued foreground/background execution permission. Android can kill it despite mobile data staying connected. When the 40-second heartbeat expires the site disables new submissions automatically, rather than accepting links into an offline queue.
+
+Bot menu commands:
+- `.menu`, `.menu all`, `.categories`: attached branding and official Channel link, with genuine forwarded Channel source only after verified publishing (native View Channel UI is controlled by WhatsApp).
+- `.channel`: official Channel join link.
+- `.submitlink`: public Group/Channel invite submission website.
+- `.links`: live web and Channel URLs, never retired Railway domains.
+- `.channelmenu status|publish|disable`: owner-only source announcement lifecycle.
+- `.linkhubstatus`: owner-only heartbeat and submission readiness check.
+
+Posting is powered by unofficial Baileys Newsletter functionality, not a supported Meta Cloud API Channels publisher. A WhatsApp update could break it or restrict the linked account.
