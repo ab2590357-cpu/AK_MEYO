@@ -654,7 +654,14 @@ registerCommand({
       '',
       '📚 Type *' + ctx.prefix + 'menu* for the bot commands.'
     ].join('\n');
-    return sendMenuCard(ctx, content);
+    // Keep the genuine Channel post forward when the owner has published it.
+    // Otherwise send the Channel link FIRST in a text message so WhatsApp can
+    // generate a native preview. An image-caption-only message does not
+    // consistently produce a View Channel preview card.
+    if (await forwardChannelMenu(ctx)) {
+      return ctx.send({ text: content }, { quoted: ctx.msg });
+    }
+    return ctx.send({ text: config.whatsappChannelUrl + '\n\n' + content.replace(config.whatsappChannelUrl, '').trim() }, { quoted: ctx.msg });
   }
 });
 
@@ -669,7 +676,7 @@ registerCommand({
       CHANNEL_LINK_HUB_URL,
       '',
       '✅ WhatsApp Group and Channel invitations',
-      '⏱️ One submission per browser per 24 hours',
+      '⏱️ One public submission every 12 hours (owner Admin Portal has no cooldown)',
       '📣 Valid links post to the official Channel when the authorized bot is online.',
       '',
       'Official Channel: ' + config.whatsappChannelUrl
