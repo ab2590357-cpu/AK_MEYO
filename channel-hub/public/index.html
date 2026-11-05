@@ -3,13 +3,13 @@
 <meta name="theme-color" content="#0b1211"><meta name="description" content="Share your WhatsApp group or channel with our community.">
 <title>A-X-HK | ABDULLAH-X-HACKER</title><link rel="stylesheet" href="/style.css"></head>
 <body><div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
-<header class="topbar"><a class="brand" href="/" aria-label="A-X-HK Channel Hub home"><span class="brand-mark">A<span>✦</span></span><span>A-X-HK <small>OFFICIAL NETWORK</small></span></a>
+<header class="topbar"><a class="brand" href="/" aria-label="A-X-HK Channel Hub home"><span class="brand-mark brand-image"><img id="siteLogo" src="" alt="A-X-HK logo" decoding="async"><span class="logo-fallback">AX</span></span><span><span id="brandName">A-X-HK</span><small id="brandTagline">OFFICIAL NETWORK</small></span></a>
 <div class="topright"><span class="live-dot"></span><span>PUBLIC LINK PORTAL</span></div></header>
-<main><section class="intro"><div class="eyebrow">✦ &nbsp; COMMUNITY DISCOVERY NETWORK &nbsp; ✦</div>
+<main><section class="intro"><div class="eyebrow" id="heroEyebrow">✦ &nbsp; COMMUNITY DISCOVERY NETWORK &nbsp; ✦</div>
 <h1>Make your <em>community</em><br>discoverable.</h1>
 <p class="lead">Share your WhatsApp Group or Channel with our community. Submit one link every 12 hours. We take care of the rest.</p>
 <div class="pills"><span>✓ &nbsp;Group &amp; Channel links</span><span>✓ &nbsp;12-hour cooldown</span><span>✓ &nbsp;Automatic publishing*</span></div></section>
-<div class="layout"><section class="panel submit-panel"><div class="section-number">01 / SUBMISSION</div><h2>Share your link</h2><p class="subline">Paste an invitation link below. Only official WhatsApp invitation URLs are accepted.</p>
+<div class="layout"><section class="panel submit-panel"><div class="section-number">01 / SUBMISSION</div><h2 id="submitTitle">Share your link</h2><p class="subline" id="submitDescription">Paste an invitation link below. Only official WhatsApp invitation URLs are accepted.</p>
 <form id="submitForm" novalidate><label for="link">WHATSAPP INVITE LINK</label>
 <div class="input-shell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>
 <input id="link" type="url" placeholder="https://whatsapp.com/channel/..." autocomplete="url" required maxlength="250"></div>
@@ -17,7 +17,7 @@
 <div class="explain"><div class="explain-icon">✦</div><span>Submit your invite once. Our connected bot will automatically publish it to the official WhatsApp Channel without manual approval.</span></div>
 <button type="submit" id="send" class="button-primary"><span id="buttonLabel">Submit &amp; auto-publish link</span><span aria-hidden="true">↗</span></button>
 <p id="message" class="message" role="status" aria-live="polite"></p></form>
-<div id="submitted" class="submitted hidden"><div class="success-mark">✓</div><h3>Link accepted</h3><p>Your link is in the publishing queue. The bot handles posting automatically; watch the live status below.</p><div class="status-line"><span>Posting status</span><strong id="postingStatus">Pending</strong></div><div class="status-line"><span>Next submission</span><strong id="countdown">12 hours</strong></div><button id="resetView" class="button-secondary">View form</button></div>
+<div id="submitted" class="submitted hidden"><div class="success-mark">✓</div><h3 id="submissionHeading" aria-live="polite">Link accepted!</h3><p id="submissionCopy">Your link has been submitted. Our bot is publishing it automatically.</p><div class="status-line"><span>Posting status</span><strong id="postingStatus">Pending</strong></div><div class="status-line"><span>Next submission</span><strong id="countdown">12 hours</strong></div><a id="visitChannel" class="button-primary channel-visit-button" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer"><span id="visitChannelLabel">Open our WhatsApp Channel ↗</span><span aria-hidden="true">↗</span></a><p id="channelButtonNote" class="channel-button-note">Check the official Channel. We will confirm here when your link has been published.</p><button id="resetView" class="button-secondary">View form</button></div>
 </section>
 <aside class="side"><div class="side-panel"><div class="section-number">02 / HOW IT WORKS</div><h2>Three simple steps.</h2>
 <div class="step"><b>01</b><div><strong>Submit a link</strong><p>Share your own group or channel invite.</p></div></div>
@@ -25,4 +25,4 @@
 <div class="step"><b>03</b><div><strong>Automatic Channel post</strong><p>Our bot publishes it without owner approval and includes the A-X-HK website link.</p></div></div></div>
 <div class="help-panel"><div class="help-icon">⏱</div><div><strong>One link per 12 hours</strong><p>We apply a browser and network cooldown to reduce spam.</p></div></div></aside></div>
 <footer><div><strong>A-X-HK</strong> <span>— Channel Link Hub</span></div><span>*Automatic posting requires an online worker and supported WhatsApp connection.</span></footer>
-</main><script src="/app.js" defer></script><script src="/contact.js" defer></script></body></html>
+</main><script src="/app.js" defer></script><script src="/contact.js" defer></script><script src="/brand.js" defer></script></body></html>
