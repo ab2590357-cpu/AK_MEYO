@@ -12,7 +12,7 @@ function msg(text,ok=false){message.textContent=text;message.classList.toggle('o
 function refreshButton(){
   if(last)return;
   button.disabled=busy||!serviceReady;
-  label.textContent=busy?'Sending…':serviceReady?'Submit & auto-publish link':'Bot offline — submissions paused';
+  label.textContent=busy?'Sending…':serviceReady?(window.AXHK_BRAND?.submitButton||'Submit & auto-publish link'):'Bot offline — submissions paused';
 }
 async function refreshAvailability(){
   if(last)return;
