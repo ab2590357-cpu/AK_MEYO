@@ -44,6 +44,19 @@ function updateEnv(existing,values){
 const token=await securePrompt('🔒 A-X-HK PRIVATE CHANNEL WORKER SETUP');
 if(!/^[a-f0-9]{64}$/i.test(token)){console.error('Invalid token. Copy WORKER_TOKEN (64 hexadecimal characters) from Vercel project environment settings.');process.exitCode=1;}
 else {
+  const workerApi='https://axhk-channel-link-hub.vercel.app/api/index';
+  try {
+    const response=await fetch(workerApi+'?mode=worker&action=verify',{
+      headers:{Authorization:'Bearer '+token},signal:AbortSignal.timeout(15000)
+    });
+    const verified=await response.json().catch(()=>({}));
+    if(response.status!==200||verified?.workerAuthenticated!==true)
+      throw new Error('The token does not match the live Vercel worker authentication (HTTP '+response.status+'). No local settings changed.');
+    console.log('✅ Vercel worker token verified without claiming or posting links.');
+  } catch(err) {
+    console.error('Token verification failed:',err.message);
+    process.exit(1);
+  }
   const data=await fs.readFile(envFile,'utf8').catch(err=>err.code==='ENOENT'?'':Promise.reject(err));
   const output=updateEnv(data,{
     CHANNEL_HUB_API_URL:'https://axhk-channel-link-hub.vercel.app/api/index',
