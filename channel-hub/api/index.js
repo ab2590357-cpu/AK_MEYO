@@ -39,27 +39,27 @@ function canonicalLink(raw) {
   throw new Error('Only valid WhatsApp Group or Channel links are allowed');
 }
 async function supabase(path, { method = 'GET', body } = {}) {
-  const url = secret('SUPABASE_URL').replace(/\/$/, '');
-  const key = secret('SUPABASE_SERVICE_ROLE_KEY');
-  if (!/^https:\/\/[a-z0-9.-]+\.supabase\.co$/.test(url) || !key) throw new Error('Cloud database is not configured');
-  const ctrl = new AbortController();
-  const timeout = setTimeout(() => ctrl.abort(), 12000);
+  const base = secret('SUPABASE_URL').replace(/\/$/, '');
+  const token = secret('EDGE_PROXY_TOKEN');
+  if (!/^https:\/\/[a-z0-9.-]+\.supabase\.co$/.test(base) || token.length < 32)
+    throw new Error('Secure database gateway is not configured');
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
   try {
-    const r = await fetch(url + '/rest/v1/' + path, {
-      method,
-      headers: { apikey: key, Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal: ctrl.signal
+    const response = await fetch(base + '/functions/v1/axhk-channel-gateway', {
+      method: 'POST', signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', 'x-axhk-proxy-token': token },
+      body: JSON.stringify({ path, method, body })
     });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error('Database request failed: ' + r.status + ' ' + String(data?.message || '').slice(0,120));
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error('Database gateway failed: HTTP ' + response.status);
     return data;
   } finally { clearTimeout(timeout); }
 }
 const rpc = (name, body) => supabase('rpc/' + name, { method: 'POST', body });
 function auth(req, env) { return secureEqual(String(req.headers.authorization || '').replace(/^Bearer /i, ''), secret(env)); }
 function ensureConfigured() {
-  return secret('SUPABASE_URL') && secret('SUPABASE_SERVICE_ROLE_KEY') && secret('HASH_SALT').length >= 32 && secret('WORKER_TOKEN').length >= 32 && secret('ADMIN_TOKEN').length >= 32;
+  return secret('SUPABASE_URL') && secret('EDGE_PROXY_TOKEN').length >= 32 && secret('HASH_SALT').length >= 32 && secret('WORKER_TOKEN').length >= 32 && secret('ADMIN_TOKEN').length >= 32;
 }
 const uuidRe = /^[a-f0-9-]{36}$/i;
 export default async function handler(req, res) {
