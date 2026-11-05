@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>A-X-HK | Channel Hub Admin</title><link rel="stylesheet" href="/style.css"></head>
+<body><header class="topbar"><a class="brand" href="/"><span class="brand-mark">A</span><span>A-X-HK <small>CHANNEL HUB / ADMIN</small></span></a><a href="/">Public page ↗</a></header><main style="max-width:1060px"><section class="intro"><div class="eyebrow">OWNER CONSOLE</div><h1 style="font-size:clamp(38px,6vw,65px)">Channel <em>control</em>.</h1><p class="lead">Owner-only submissions monitor. Use the ADMIN_TOKEN configured in Vercel. It is not saved by this page.</p></section>
+<section class="panel submit-panel"><label for="token">ADMIN ACCESS TOKEN</label><div class="input-shell"><input id="token" type="password" autocomplete="off" placeholder="Paste your private admin token"></div><button class="button-primary" id="load" style="margin-top:15px">Load submissions <span>↗</span></button><p id="note" role="status" class="message"></p><div style="overflow:auto;margin-top:20px"><table style="width:100%;border-collapse:collapse;text-align:left;font-size:12px"><thead><tr><th>Submitted</th><th>Link</th><th>Status</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div></section></main>
+<script>
+const $=x=>document.querySelector(x);
+const note=$('#note');
+function text(tag,value){let e=document.createElement(tag);e.textContent=value;return e}
+async function call(method,body){
+  const token=$('#token').value.trim();if(!token)throw Error('Enter the admin token');
+  const r=await fetch('/api/index?mode=admin',{method,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  const d=await r.json();if(!r.ok)throw Error(d.error||'Request failed');return d
+}
+async function load(){
+  try{
+    note.textContent='Loading...';const d=await call('GET');const rows=$('#rows');rows.replaceChildren();
+    for(const x of d.submissions){
+      const tr=document.createElement('tr');
+      for(const val of [new Date(x.created_at).toLocaleString(),x.link,x.status]){
+        const td=document.createElement('td');td.style.padding='14px 8px';td.style.borderTop='1px solid #2d4034';
+        if(val===x.link){const a=text('a',val);a.href=val;a.target='_blank';a.rel='noopener noreferrer';a.style.color='#b4eab8';td.append(a)}else td.textContent=val;
+        tr.append(td);
+      }
+      const td=document.createElement('td');td.style.borderTop='1px solid #2d4034';
+      for(const action of ['retry','reject']){
+        const b=text('button',action);b.style.cssText='margin:3px;padding:7px 9px;border-radius:7px;background:#233c29;color:#c1f8c8;border:1px solid #3b6243;cursor:pointer';
+        b.onclick=async()=>{
+          if(!confirm(action+' this submission?'))return;
+          try{await call('POST',{id:x.id,action});await load()}catch(e){note.textContent=e.message}
+        };
+        td.append(b);
+      }
+      tr.append(td);rows.append(tr);
+    }
+    note.textContent=d.submissions.length+' submissions found';
+  }catch(e){note.textContent=e.message}
+}
+$('#load').onclick=load;
+</script></body></html>
