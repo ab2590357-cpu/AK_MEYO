@@ -47,3 +47,27 @@ test('premium forward does not send anything when owner session is absent',async
  assert.equal(await forwardChannelMenu({sessionId:'linked',send:()=>{count++;},sock:{}}),false);
  assert.equal(count,0);
 });
+
+test('premium Channel announcement embeds main commands and categories under image caption limit',()=>{
+  const caption=buildChannelMenuAnnouncement({prefix:'.',categories:['system','media','owner','group','tools','utility','download','ai','profile','reaction']});
+  assert.match(caption,/A-X-HK PREMIUM MENU/);
+  assert.match(caption,/\.menu all/);
+  assert.match(caption,/\.alive/);
+  assert.match(caption,/\.ping/);
+  assert.match(caption,/\.channel/);
+  assert.match(caption,/https:\/\/whatsapp\.com\/channel\//);
+  assert.match(caption,/SYSTEM/);
+  assert.ok(caption.length <= 1024);
+});
+test('native Channel-branded update must include image and correct caption marker',()=>{
+  const caption=buildChannelMenuAnnouncement();
+  assert.equal(isBrandedChannelMenuMessage({message:{imageMessage:{caption}}}),true);
+  assert.equal(isBrandedChannelMenuMessage({message:{extendedTextMessage:{text:caption}}}),false);
+  assert.equal(isBrandedChannelMenuMessage({message:{imageMessage:{caption:'random channel post'}}}),false);
+});
+test('linked multi-session does not forward owner Channel message',async()=>{
+  let sends=0;
+  const ok=await forwardChannelMenu({sessionId:'other',send:async()=>{sends++}});
+  assert.equal(ok,false);
+  assert.equal(sends,0);
+});
