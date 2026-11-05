@@ -74,7 +74,7 @@ form?.addEventListener('submit',async event=>{
 });
 document.querySelector('#resetView')?.addEventListener('click',()=>{
   form.classList.remove('hidden');view.classList.add('hidden');
-  msg('Your previous submission still has a 24-hour cooldown. Submit again only when eligible.');
+  msg('Your previous submission still has a 12-hour cooldown. Submit again only when eligible.');
   last=null;
   refreshAvailability();
 });
