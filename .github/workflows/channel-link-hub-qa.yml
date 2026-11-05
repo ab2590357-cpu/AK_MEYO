@@ -27,7 +27,7 @@ jobs:
           node-version: '22'
           cache: npm
       - name: Install existing bot packages
-        run: npm ci --ignore-scripts
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
       - name: Syntax check
         run: |
           node --check channel-hub/api/index.js
