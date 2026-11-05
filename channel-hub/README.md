@@ -67,3 +67,14 @@ Database migration was applied in Supabase project wwehfusaimzrkztdfccz; Vercel 
 - Stored 24-hour cooldown is per signed browser visitor, supplemented with network flood limits; it is not independently verified WhatsApp identity.
 - Do not automatically resend a message after a transient send/acknowledgment failure; review the Channel to avoid duplicate posts.
 - The Edge gateway verifies a hashed proxy token stored in a service-only configuration table. The Vercel app must never disclose EDGE_PROXY_TOKEN, HASH_SALT, WORKER_TOKEN or ADMIN_TOKEN.
+
+## Owner-provided ABDULLAH X MD menu image and real Channel forwarding
+
+- On Termux the menu uploader accepts JPEG directly without native sharp. In the protected local dashboard at http://127.0.0.1:3000/dashboard choose Menu Image, choose the supplied JPEG and upload. It persists outside Git in ~/.axhk-whatsapp-bot/data/menu-card-custom.jpg.
+- Commands .menu, .help, .categories, .menu <category>, .alive use the JPEG; .menu all and .fullmenu send the JPEG on the first page and then all other catalog pages. The Channel link is included with the menu.
+- To enable GENUINE Channel forwarding, the authorized main owner explicitly sends .channelmenu publish. This posts ONE original announcement to their own Channel and saves the actual WhatsApp-returned message locally.
+- Later .menu requests attempt to forward THAT ACTUAL CHANNEL POST and then send dynamic command text. No forged newsletter forwarding metadata is generated. WhatsApp itself decides whether to show native View Channel attribution; the bot cannot promise that element.
+- .channelmenu status checks the source; .channelmenu disable turns forwarding off without deleting the Channel post. Publish operations have a one-hour cooldown.
+- Ordinary menu requests never publish to the Channel. Channel Link Hub public submission queue stays off until actual admin-owned Channel posting is verified.
+- Verify: AXHK_TERMUX_MODE=1 node --test tests/channel-menu.test.mjs and AXHK_TERMUX_MODE=1 node scripts/termux-smoke.mjs.
+- Preserve saved WhatsApp credentials; never delete the session folder or run Unlink & Reset.
