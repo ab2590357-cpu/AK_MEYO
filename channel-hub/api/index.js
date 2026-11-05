@@ -148,9 +148,11 @@ export default async function handler(req, res) {
           return send(res, 503, { error: 'Bot is offline or Channel is not verified' });
         const { link, kind } = canonicalLink(req.body?.link);
         const receipt = crypto.randomBytes(32).toString('hex');
-        const result = await rpc('axhk_admin_submit_link', {
+        const ownerHash = hash('owner:channel-hub');
+        const result = await rpc('axhk_submit_link', {
           p_link: link, p_kind: kind,
-          p_actor_hash: hash('owner:channel-hub'),
+          p_actor_hash: ownerHash,
+          p_ip_hash: ownerHash,
           p_receipt_hash: hash('receipt:' + receipt)
         });
         return send(res, result?.accepted ? 200 : 409,
