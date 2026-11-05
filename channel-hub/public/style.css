@@ -80,3 +80,6 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .brand-editor-grid input[type="color"]{border:1px solid #365141;appearance:none;border-radius:10px;background:#07110d;width:100%;height:48px;padding:6px;cursor:pointer}
 #brandSave{margin-top:12px}
 @media(max-width:640px){.brand-editor-grid{grid-template-columns:1fr;gap:13px}.brand-editor-grid .wide{grid-column:auto}.brand-logo-editor{align-items:flex-start;gap:13px;padding:14px}.brand-logo-editor img{height:64px;width:64px;border-radius:13px}.brand-logo-copy{gap:8px}.brand-logo-copy .button-secondary{font-size:11px;padding:9px}.branding-editor{padding:23px 17px}.brand-editor-actions .button-secondary{margin:0}}
+
+/* Editable surface color applies consistently across all site panels */
+.panel,.side-panel,.help-panel{background:var(--surface);background:linear-gradient(150deg,color-mix(in srgb,var(--surface) 91%,#fff),var(--surface))}
