@@ -32,6 +32,8 @@ jobs:
         run: |
           node --check channel-hub/api/index.js
           node --check channel-hub/public/app.js
+          node --check channel-hub/public/brand.js
+          node --check channel-hub/public/contact.js
           node --check lib/services/channel-hub-worker.js
           node --check lib/index.js
           node --check lib/services/link-logo.js
