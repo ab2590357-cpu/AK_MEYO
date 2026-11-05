@@ -1,5 +1,6 @@
 import { downloadMediaMessage } from '@whiskeysockets/baileys';
-import { Sticker, StickerTypes } from 'wa-sticker-formatter';
+import { loadStickerFormatter } from '../../lib/utils/termux-native.js';
+const { Sticker, StickerTypes } = await loadStickerFormatter();
 import { registerCommand } from '../../lib/core/registry.js';
 import { config } from '../../lib/config.js';
 import { logger } from '../../lib/core/logger.js';
