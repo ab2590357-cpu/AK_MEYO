@@ -58,7 +58,8 @@ function quickStartRows(prefix) {
     `┃ 🎬 *${prefix}video <song>*`,
     `┃ 🟢 *${prefix}alive*`,
     `┃ ⚡ *${prefix}ping*`,
-    `┃ 👑 *${prefix}owner*`
+    `┃ 👑 *${prefix}owner*`,
+    `┃ 📣 *${prefix}channel*   •   *${prefix}submitlink*`
   ];
 }
 
@@ -78,15 +79,16 @@ function rowBox(title, rows, icon = '✨') {
   ];
 }
 
-const DEFAULT_PUBLIC_BASE_URL = 'https://zesty-solace-production-29fe.up.railway.app';
+const CHANNEL_LINK_HUB_URL = 'https://axhk-channel-link-hub.vercel.app/';
 const DEFAULT_CREATOR_STUDIO_URL = 'https://abdullah-x-hk-studio.vercel.app/';
 
 function publicBaseUrl() {
-  return String(config.publicUrl || DEFAULT_PUBLIC_BASE_URL).replace(/\/+$/, '');
+  return String(config.publicUrl || '').replace(/\/+$/, '');
 }
 
 function userLinkPortalUrl() {
-  return `${publicBaseUrl()}/link`;
+  const url = publicBaseUrl();
+  return url ? `${url}/link` : '';
 }
 
 function formatDirectPairCode(value = '') {
@@ -127,6 +129,7 @@ function premiumHomeMenu(ctx) {
     `┃ ${p}ping   •   ${p}alive   •   ${p}owner`,
     `┃ ${p}menu all   •   ${p}categories`,
     `┃ ${p}searchcmd <word>   •   ${p}links`,
+    `┃ ${p}channel   •   ${p}submitlink`,
     `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
     '',
     `╭━━〔 ✦ ${serifBold('A_X_HK OS')} 〕━━╮`,
@@ -606,11 +609,51 @@ registerCommand({
 registerCommand({ name: 'minisite', category: 'system', description: 'Show configured mini-site URL', async run(ctx) { await ctx.reply([...rowBox('MINI SITE', [`┃ 🔗 ${config.miniSiteUrl || 'Not configured yet'}`], '🌐'), '', ...premiumFooterBlock()].join('\n')); } });
 
 registerCommand({
+  name: 'channel', aliases: ['mychannel', 'joinchannel', 'channelink'], category: 'system',
+  description: 'Show A-X-HK official WhatsApp Channel and how to follow it',
+  cooldown: 5,
+  async run(ctx) {
+    const content = [
+      '📣 *A-X-HK OFFICIAL WHATSAPP CHANNEL*',
+      '',
+      config.whatsappChannelUrl,
+      '',
+      'Tap the link and select *Follow* to see Channel posts.',
+      '🔗 Want to share your WhatsApp Group/Channel? Submit it at:',
+      CHANNEL_LINK_HUB_URL,
+      '',
+      '📚 Type *' + ctx.prefix + 'menu* for the bot commands.'
+    ].join('\n');
+    return sendMenuCard(ctx, content);
+  }
+});
+
+registerCommand({
+  name: 'submitlink', aliases: ['sharelink', 'submitgroup', 'submitchannel', 'linkhub'],
+  category: 'system', description: 'Share a group/channel invite through the public A-X-HK Link Hub',
+  cooldown: 5,
+  async run(ctx) {
+    await ctx.reply([
+      '🔗 *A-X-HK COMMUNITY LINK SUBMISSIONS*',
+      '',
+      CHANNEL_LINK_HUB_URL,
+      '',
+      '✅ WhatsApp Group and Channel invitations',
+      '⏱️ One submission per browser per 24 hours',
+      '📣 Valid links post to the official Channel when the authorized bot is online.',
+      '',
+      'Official Channel: ' + config.whatsappChannelUrl
+    ].join('\n'));
+  }
+});
+
+registerCommand({
   name: 'links', category: 'system', description: 'Show configured bot links',
   async run(ctx) {
     const base = publicBaseUrl();
     const links = [
-      base && `┃ 🔗 Link WhatsApp: ${base}/link`,
+      base && `┃ 🔗 Multi-session Bot Portal: ${base}/link`,
+      `┃ 🚀 Submit Group/Channel: ${CHANNEL_LINK_HUB_URL}`,
       config.miniSiteUrl && `┃ 🌐 Mini Bot: ${config.miniSiteUrl}`,
       `┃ 💎 Creator Studio: ${creatorStudioUrl()}`,
       config.githubUrl && `┃ 🧩 GitHub: ${config.githubUrl}`,
@@ -637,7 +680,8 @@ registerCommand({
       `Version: ${config.version}`,
       `Commands: ${allCommands().length}`,
       config.miniSiteUrl && `Mini Bot: ${config.miniSiteUrl}`,
-      `Link Portal: ${userLinkPortalUrl()}`,
+      `Submit Group/Channel: ${CHANNEL_LINK_HUB_URL}`,
+      userLinkPortalUrl() && `Multi-session Bot Portal: ${userLinkPortalUrl()}`,
       `Creator Studio: ${creatorStudioUrl()}`,
       config.githubUrl && `GitHub: ${config.githubUrl}`,
       config.whatsappChannelUrl && `Updates: ${config.whatsappChannelUrl}`,
@@ -658,6 +702,7 @@ registerCommand({
   name: 'multilink', aliases: ['linkbot', 'multibot'], category: 'system', description: 'Show the public A-X-HK multi-link portal',
   async run(ctx) {
     const url = userLinkPortalUrl();
+    if (!url) return ctx.reply('🔒 *A-X-HK MULTI-SESSION LINKING* is currently local/private. The retired Railway URL is no longer active.\n\nFor WhatsApp Group/Channel submissions use: ' + CHANNEL_LINK_HUB_URL);
     await ctx.reply(`🔗 *A-X-HK USER LINK*\n${url}\n\nThis page only links the visitor's own WhatsApp. Owner/admin controls are protected separately.`);
   }
 });
