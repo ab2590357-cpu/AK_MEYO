@@ -386,8 +386,8 @@ registerCommand({
 registerCommand({
   name: 'channelmenu',
   category: 'owner',
-  description: 'Manage authentic A-X-HK Channel menu forwarding',
-  usage: 'channelmenu status|publish|disable',
+  description: 'Preview or publish authentic A-X-HK Channel menu image and forwarding',
+  usage: 'channelmenu status|preview|publish|disable',
   ownerOnly: true,
   masterOnly: true,
   cooldown: 10,
@@ -402,11 +402,20 @@ registerCommand({
            : '⚠️ An older Channel post is saved, but does not contain the premium menu image/caption. Use ' + ctx.prefix + 'channelmenu publish after the one-hour repost limit to upgrade.')
         : 'ℹ️ No published Channel menu saved yet. .menu currently sends the brand image and link normally.\nTo publish once as admin: ' + ctx.prefix + 'channelmenu publish');
     }
+    if(mode==='preview'){
+      const caption=buildChannelMenuAnnouncement({
+        prefix:ctx.prefix,
+        categories:Object.keys(commandsByCategory())
+      });
+      const {buffer:image}=await readMenuCard();
+      await ctx.send({image,caption},{quoted:ctx.msg});
+      return;
+    }
     if (mode === 'disable') {
       await disableChannelMenuForward();
       return ctx.reply('✅ Genuine Channel forwarding disabled; standard image menu restored. No Channel posts were deleted.');
     }
-    if (mode !== 'publish') return ctx.reply('Usage: ' + ctx.prefix + 'channelmenu status|publish|disable');
+    if (mode !== 'publish') return ctx.reply('Usage: ' + ctx.prefix + 'channelmenu status|preview|publish|disable');
     const posted = await publishChannelMenu(ctx, {
       caption:buildChannelMenuAnnouncement({
         prefix:ctx.prefix,
