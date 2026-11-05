@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createChannelHubWorker, normalizeChannelJid, formatChannelLinkPost, LINK_HUB_WEBSITE } from '../lib/services/channel-hub-worker.js';
+import { createChannelHubWorker, normalizeChannelJid, formatChannelLinkPost, buildChannelLinkMessage, LINK_HUB_WEBSITE } from '../lib/services/channel-hub-worker.js';
 
 test('Channel JID cannot be confused with invite URLs or groups', () => {
   assert.equal(normalizeChannelJid('123456789012345@newsletter'), '123456789012345@newsletter');
@@ -123,4 +123,45 @@ test('temporary canonical hostname DNS error retries only on same-project Vercel
     ]);
     worker.stop();
   }finally{process.env=old;}
+});
+
+test('Group invite metadata creates a rich preview without joining the group',async()=>{
+  let queried=0,joinCalled=false,images=0;
+  const sock={
+    groupGetInviteInfo:async(code)=>{queried++;assert.equal(code,'ABCDEFGHIJKLMNOPQRST');return {id:'1234567890@g.us',subject:'Our Test Community'};},
+    groupAcceptInvite:()=>{joinCalled=true;throw new Error('Never auto-join');},
+    profilePictureUrl:async()=>undefined
+  };
+  const msg=await buildChannelLinkMessage(sock,{kind:'group',link:'https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST'},{
+    imageFetcher:async()=>{images++;throw new Error('Unexpected image fetch');}
+  });
+  assert.equal(queried,1);
+  assert.equal(joinCalled,false);
+  assert.equal(images,0);
+  assert.equal(msg.linkPreview.title,'Our Test Community');
+  assert.equal(msg.linkPreview.description,'Group chat invite');
+  assert.equal(msg.linkPreview['matched-text'],'https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST');
+  assert.match(msg.text,/Our Test Community/);
+  assert.ok(msg.text.indexOf('https://chat.whatsapp.com') < msg.text.indexOf(LINK_HUB_WEBSITE));
+});
+test('Channel invite metadata gets a Channel preview, not a Group invite',async()=>{
+  const msg=await buildChannelLinkMessage({
+    newsletterMetadata:async()=>({id:'123456789012345@newsletter',name:'Our Channel'})
+  },{kind:'channel',link:'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F'});
+  assert.equal(msg.linkPreview.title,'Our Channel');
+  assert.equal(msg.linkPreview.description,'WhatsApp Channel');
+  assert.match(msg.text,/Follow this WhatsApp Channel/);
+});
+test('unavailable metadata still publishes the original invite as one text message',async()=>{
+  const link='https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST';
+  const msg=await buildChannelLinkMessage({
+    groupGetInviteInfo:async()=>{throw new Error('Invite metadata unavailable');}
+  },{kind:'group',link});
+  assert.equal(msg.text.includes(link),true);
+  assert.equal(msg.linkPreview,undefined);
+  assert.equal(msg.text.includes(LINK_HUB_WEBSITE),true);
+});
+test('rejects incorrectly paired link types',()=>{
+  assert.throws(()=>formatChannelLinkPost({kind:'group',link:'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F'}));
+  assert.throws(()=>formatChannelLinkPost({kind:'channel',link:'https://chat.whatsapp.com/ABCDEFGHIJKLMNOPQRST'}));
 });
