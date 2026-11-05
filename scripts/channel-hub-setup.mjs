@@ -61,6 +61,7 @@ else {
   const output=updateEnv(data,{
     CHANNEL_HUB_API_URL:'https://axhk-channel-link-hub.vercel.app/api/index',
     CHANNEL_HUB_INVITE_CODE:'0029VbA4HK9LNSaApTeufD1F',
+    CHANNEL_HUB_CHANNEL_JID:'', // Always resolve the actual owned Channel from the invite, not an old numeric override.
     CHANNEL_HUB_WORKER_TOKEN:token,
     CHANNEL_HUB_ENABLED:'true',
     BOT_PREFIX:'.',
