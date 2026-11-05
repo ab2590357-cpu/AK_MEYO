@@ -251,12 +251,18 @@ function categoryMenu(prefix, requested, mode = config.mode, theme = 'royal', me
   return lines.join('\n');
 }
 
+function menuChannelFooter() {
+  const url = String(config.whatsappChannelUrl || 'https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F').trim();
+  return url ? `\n\n📣 *A-X-HK OFFICIAL CHANNEL*\n${url}\n🔗 Open the link to view / follow our Channel.` : '';
+}
+
 async function sendMenuCard(ctx, caption) {
+  const withChannel = String(caption) + menuChannelFooter();
   try {
     const { buffer: image } = await readMenuCard();
-    return await ctx.send({ image, caption }, { quoted: ctx.msg });
+    return await ctx.send({ image, caption: withChannel }, { quoted: ctx.msg });
   } catch {
-    return ctx.reply(caption);
+    return ctx.reply(withChannel);
   }
 }
 
@@ -338,7 +344,7 @@ function fullMenuMessages(prefix, maxLen = 3800) {
 async function sendFullMenuChat(ctx) {
   const chunks = fullMenuMessages(ctx.prefix);
   for (let i = 0; i < chunks.length; i += 1) {
-    if (i === 0) await ctx.reply(chunks[i]);
+    if (i === 0) await sendMenuCard(ctx, chunks[i]);
     else await ctx.send({ text: chunks[i] });
     if (i + 1 < chunks.length) await sleep(450);
   }
