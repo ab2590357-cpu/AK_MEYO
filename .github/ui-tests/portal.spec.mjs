@@ -51,7 +51,7 @@ const server=createServer(async(req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const root='http://127.0.0.1:'+server.address().port;
-const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
 await fs.mkdir(shotDir,{recursive:true});
 test.after(async()=>{await browser.close();await new Promise(resolve=>server.close(resolve));});
 async function pageFor(width=1440,height=900){
