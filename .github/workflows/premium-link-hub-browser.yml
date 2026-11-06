@@ -1,0 +1,39 @@
+name: Premium Link Hub browser QA
+on:
+  pull_request:
+    paths:
+      - "channel-hub/**"
+      - "tests/premium-portal.test.mjs"
+      - ".github/ui-tests/**"
+      - ".github/workflows/premium-link-hub-browser.yml"
+  push:
+    branches: ["design/premium-channel-hub-v2", "feature/channel-link-hub"]
+permissions:
+  contents: read
+jobs:
+  chromium-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install pinned browser test packages
+        working-directory: .github/ui-tests
+        run: npm install --ignore-scripts --no-fund --no-audit --no-package-lock
+      - name: Install Chromium
+        working-directory: .github/ui-tests
+        run: npx playwright install --with-deps chromium
+      - name: Run browser regression QA
+        working-directory: .github/ui-tests
+        run: node --test portal.spec.mjs
+      - name: Upload visual QA screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: premium-portal-chromium-screenshots
+          path: .github/ui-tests/screenshots/*.png
+          if-no-files-found: ignore
