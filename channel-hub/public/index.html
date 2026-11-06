@@ -18,8 +18,8 @@
         <span class="brand-name-stack"><strong id="brandName">A-X-HK</strong><small id="brandTagline">OFFICIAL NETWORK</small></span>
       </a>
       <nav class="axhk-nav" id="mainNav" aria-label="Main navigation">
-        <a href="#how-it-works">How it works</a>
-        <a href="#community">Community</a>
+        <a href="#how-it-works" id="navHowLabel">How it works</a>
+        <a href="#community" id="navCommunityLabel">Community</a>
         <a class="axhk-channel-link" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer" id="headerChannelLabel">Explore Channel</a>
         <a class="nav-submit" href="#submit" id="headerSubmitLabel">Submit link <span aria-hidden="true">↗</span></a>
       </nav>
@@ -44,7 +44,7 @@
         <div class="hero-visual" aria-label="A-X-HK network visualization">
           <div class="visual-glow" aria-hidden="true"></div>
           <div class="visual-frame">
-            <div class="visual-topline"><span>NETWORK / A-X-HK</span><span class="visual-topright">2026 <i aria-hidden="true">✦</i></span></div>
+            <div class="visual-topline"><span id="visualTopLabel">NETWORK / A-X-HK</span><span class="visual-topright">2026 <i aria-hidden="true">✦</i></span></div>
             <div class="visual-center">
               <div class="axhk-hero-ring" aria-hidden="true"><div class="axhk-hero-ring-inner"></div></div>
               <div class="hero-image-stage"><img id="heroImage" src="/axhk-logo.webp" alt="" width="198" height="198"></div>
@@ -61,7 +61,7 @@
           <div class="panel-topline"><span class="panel-status"><span class="mini-dot"></span><span id="formServiceStatus">Checking publishing service</span></span><span class="panel-index">A—01</span></div>
           <h2 id="submitTitle">Share your link</h2><p class="subline" id="submitDescription">Paste an invitation link below. Only official WhatsApp invitation URLs are accepted.</p>
           <form id="submitForm" novalidate>
-            <label for="link" class="field-label">WHATSAPP GROUP OR CHANNEL INVITATION</label>
+            <label for="link" class="field-label" id="formFieldLabel">WHATSAPP GROUP OR CHANNEL INVITATION</label>
             <div class="input-shell">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>
               <input id="link" name="link" type="url" placeholder="https://chat.whatsapp.com/..." autocomplete="url" required maxlength="250" aria-describedby="linkHelp message">

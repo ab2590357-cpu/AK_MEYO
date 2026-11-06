@@ -7,6 +7,8 @@ const defaults={
   heroDescription:'Your WhatsApp Group or Channel deserves to be discovered. Share your invite link and connect your community with A-X-HK.',
   heroPrimaryLabel:'Submit your link',heroSecondaryLabel:'Explore the Channel',heroBadge:'CONNECTED COMMUNITY NETWORK',
   headerChannelLabel:'Explore Channel',headerSubmitLabel:'Submit link',
+  navHowLabel:'How it works',navCommunityLabel:'Community',visualTopLabel:'NETWORK / A-X-HK',
+  formFieldLabel:'WHATSAPP GROUP OR CHANNEL INVITATION',formPlaceholder:'https://chat.whatsapp.com/...',
   trustOne:'Official WhatsApp invites',trustTwo:'12-hour fair-use cooldown',trustThree:'Publishing when bot is online',
   submitTitle:'Share your link',submitDescription:'Paste an invitation link below. Only official WhatsApp invitation URLs are accepted.',
   submitButton:'Submit & auto-publish link',
@@ -40,6 +42,8 @@ const defaults={
   accentColor:'#a8ffbf',backgroundColor:'#090f0e',surfaceColor:'#121b19',darkTextColor:'#f5fff7',
   lightBackgroundColor:'#f2f6f2',lightSurfaceColor:'#ffffff',lightTextColor:'#12231b',
   defaultTheme:'dark',motionLevel:'enhanced',fontFamily:'manrope',radiusStyle:'rounded',allowThemeToggle:true,
+  siteWidth:'standard',heroScale:'regular',sectionDensity:'comfortable',ambientEffects:true,
+  showHeroVisual:true,showCommunity:true,showFounder:true,showContactWidget:true,
   logoData:'',heroImageData:''
 };
 window.AXHK_BRAND_DEFAULTS={...defaults};
@@ -69,9 +73,18 @@ function apply(b){
  root.style.setProperty('--font-display',family[0]);root.style.setProperty('--font-body',family[1]);
  root.dataset.radius=['rounded','soft','sharp'].includes(b.radiusStyle)?b.radiusStyle:'rounded';
  root.dataset.motion=['enhanced','balanced','off'].includes(b.motionLevel)?b.motionLevel:'enhanced';
+ root.dataset.siteWidth=['standard','wide','full'].includes(b.siteWidth)?b.siteWidth:'standard';
+ root.dataset.heroScale=['regular','large','statement'].includes(b.heroScale)?b.heroScale:'regular';
+ root.dataset.sectionDensity=['compact','comfortable','cinematic'].includes(b.sectionDensity)?b.sectionDensity:'comfortable';
+ root.dataset.ambientEffects=b.ambientEffects===false?'off':'on';
+ root.dataset.hideHeroVisual=b.showHeroVisual===false?'true':'false';
+ for(const [selector,enabled] of [['.hero-visual',b.showHeroVisual],['.community-band',b.showCommunity],['.axhk-founder',b.showFounder],['#contactWidget',b.showContactWidget]]){
+   document.querySelectorAll(selector).forEach(node=>{node.hidden=enabled===false});
+ }
  if(typeof window.AXHK_THEME_CONFIG==='function')window.AXHK_THEME_CONFIG(b);
  [
   'brandName','brandTagline','heroEyebrow','heroBadge','heroDescription','headerChannelLabel','headerSubmitLabel',
+  'navHowLabel','navCommunityLabel','visualTopLabel','formFieldLabel',
   'trustOne','trustTwo','trustThree','submitTitle','submitDescription',
   'sectionHeadingTitle','sectionHeadingHighlight','sectionHeadingDescription','formHelper','formFooterLeft','formFooterRight',
   'visualCardTitle','visualCardText','communityEyebrow','communityTitle','communityHighlight','communityDescription','communityButton',
@@ -82,6 +95,7 @@ function apply(b){
   'footerDescription','footerCopyright','footerNote'
  ].forEach(id=>set(id,id==='heroEyebrow'?b.eyebrow:b[id]));
  set('heroTitleLine',b.heroTitle);set('heroHighlight',b.heroHighlight);
+ const invite=get('link');if(invite)invite.placeholder=b.formPlaceholder||defaults.formPlaceholder;
  const heroPrimary=get('heroPrimaryLabel'),heroSecondary=get('heroSecondaryLabel');
  if(heroPrimary){const span=heroPrimary.querySelector('span');if(span)span.textContent=b.heroPrimaryLabel;}
  if(heroSecondary){const span=heroSecondary.querySelector('span');if(span)span.textContent=b.heroSecondaryLabel;}

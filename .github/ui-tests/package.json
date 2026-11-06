@@ -1,0 +1,10 @@
+{
+  "name": "axhk-visual-qa",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "1.56.0",
+    "gsap": "3.13.0"
+  }
+}

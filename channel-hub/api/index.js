@@ -84,6 +84,8 @@ const BRAND_DEFAULTS = Object.freeze({
   founderName:'ABDULLAH-X-HACKER',
   founderDescription:'Building a connected network of creators, groups and channels.',
   headerChannelLabel:'Explore Channel',headerSubmitLabel:'Submit Link',
+   navHowLabel:'How it works',navCommunityLabel:'Community',visualTopLabel:'NETWORK / A-X-HK',
+   formFieldLabel:'WHATSAPP GROUP OR CHANNEL INVITATION',formPlaceholder:'https://chat.whatsapp.com/...',
   heroPrimaryLabel:'Submit your link',heroSecondaryLabel:'Explore the Channel',heroBadge:'CONNECTED COMMUNITY NETWORK',
   trustOne:'Official WhatsApp invites',trustTwo:'12-hour fair-use cooldown',trustThree:'Publishing when bot is online',
   sectionHeadingTitle:'Put your link',sectionHeadingHighlight:'in motion.',
@@ -111,6 +113,8 @@ const BRAND_DEFAULTS = Object.freeze({
   accentColor:'#a8ffbf', backgroundColor:'#090f0e',surfaceColor:'#121b19',darkTextColor:'#f5fff7',
   lightBackgroundColor:'#f2f6f2',lightSurfaceColor:'#ffffff',lightTextColor:'#12231b',
   defaultTheme:'dark',motionLevel:'enhanced',fontFamily:'manrope',radiusStyle:'rounded',allowThemeToggle:true,
+   siteWidth:'standard',heroScale:'regular',sectionDensity:'comfortable',ambientEffects:true,
+   showHeroVisual:true,showCommunity:true,showFounder:true,showContactWidget:true,
   logoData:'',heroImageData:''
 });
 function validBrand(body) {
@@ -123,6 +127,7 @@ function validBrand(body) {
     postedText:260,channelButton:85,pendingTitle:100,pendingText:250,
     contactLabel:65,founderName:90,founderDescription:260,
     headerChannelLabel:45,headerSubmitLabel:45,heroPrimaryLabel:65,heroSecondaryLabel:65,heroBadge:100,
+     navHowLabel:45,navCommunityLabel:45,visualTopLabel:65,formFieldLabel:95,formPlaceholder:120,
     trustOne:95,trustTwo:95,trustThree:95,
     sectionHeadingTitle:90,sectionHeadingHighlight:90,sectionHeadingDescription:250,
     formHelper:230,formFooterLeft:70,formFooterRight:70,visualCardTitle:65,visualCardText:65,
@@ -150,7 +155,10 @@ function validBrand(body) {
     defaultTheme:['dark','light','system'],
     motionLevel:['enhanced','balanced','off'],
     fontFamily:['manrope','inter','spacegrotesk'],
-    radiusStyle:['rounded','soft','sharp']
+    radiusStyle:['rounded','soft','sharp'],
+     siteWidth:['standard','wide','full'],
+     heroScale:['regular','large','statement'],
+     sectionDensity:['compact','comfortable','cinematic']
   })){
     if(body[key]!==undefined){
       if(typeof body[key]!=='string'||!values.includes(body[key])) throw new Error('Invalid appearance setting: '+key);
@@ -161,7 +169,13 @@ function validBrand(body) {
     if(typeof body.allowThemeToggle!=='boolean') throw new Error('Invalid theme toggle setting');
     clean.allowThemeToggle=body.allowThemeToggle;
   }
-  if(body.contactNumber!==undefined){
+  for(const key of ['ambientEffects','showHeroVisual','showCommunity','showFounder','showContactWidget']){
+     if(body[key]!==undefined){
+       if(typeof body[key]!=='boolean')throw new Error('Invalid visual setting: '+key);
+       clean[key]=body[key];
+     }
+   }
+   if(body.contactNumber!==undefined){
     if(!/^[0-9]{10,16}$/.test(body.contactNumber)) throw new Error('Contact number must include country code and digits only');
     clean.contactNumber=body.contactNumber;
   }
