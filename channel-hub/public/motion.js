@@ -8,6 +8,7 @@ const enabled=()=>level()!=='off'&&!reduced();
 const enhanced=()=>level()==='enhanced';
 const gsap=()=>window.gsap;
 const cleanups=[];
+const permanentCleanups=[];
 const add=(target,type,handler,opts)=>{target.addEventListener(type,handler,opts);cleanups.push(()=>target.removeEventListener(type,handler,opts))};
 let animations=[];
 function clear(){
@@ -80,8 +81,10 @@ function progress(){
   const max=Math.max(1,document.documentElement.scrollHeight-innerHeight);
   bar.style.transform='scaleX('+Math.max(0,Math.min(1,scrollY/max))+')';
  };
- add(window,'scroll',()=>{if(!scheduled){scheduled=true;requestAnimationFrame(paint)}},{passive:true});
- add(window,'resize',paint,{passive:true});
+ const onScroll=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(paint)}};
+ window.addEventListener('scroll',onScroll,{passive:true});
+ window.addEventListener('resize',paint,{passive:true});
+ permanentCleanups.push(()=>window.removeEventListener('scroll',onScroll),()=>window.removeEventListener('resize',paint));
  paint();
 }
 Promise.resolve(window.AXHK_BRAND_PROMISE).catch(()=>{}).then(()=>{
