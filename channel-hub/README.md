@@ -60,6 +60,7 @@ Database migration was applied in Supabase project wwehfusaimzrkztdfccz; Vercel 
 5. Start with CHANNEL_HUB_ENABLED=false. Pair from /owner on the local web dashboard or /pair when signed in (see original README). Do not reset an existing session without an independent backup.
 6. Use a dedicated test WhatsApp account and owned test Channel for the first post, because Baileys is unofficial. After test, confirm target Channel JID, then enable the polling worker. Keep the old Railway service off.
 7. Keep Termux in foreground / use its wakelock if your Android version permits; set battery usage to unrestricted for Termux. Screen-off and data-on do not ensure 24/7 execution.
+8. Optional public-media commands require a Termux-native `yt-dlp`: `pkg install python python-pip ffmpeg && python -m pip install -U yt-dlp`. No media downloader runs automatically on WhatsApp login. The connected notice is text-only on Termux to avoid unnecessary image-upload failures. Keep session files intact; test `.ping` and `.menu` after pulling updates.
 
 ## Operations safety
 
