@@ -111,6 +111,8 @@ const BRAND_DEFAULTS = Object.freeze({
   accentColor:'#a8ffbf', backgroundColor:'#090f0e',surfaceColor:'#121b19',darkTextColor:'#f5fff7',
   lightBackgroundColor:'#f2f6f2',lightSurfaceColor:'#ffffff',lightTextColor:'#12231b',
   defaultTheme:'dark',motionLevel:'enhanced',fontFamily:'manrope',radiusStyle:'rounded',allowThemeToggle:true,
+   siteWidth:'standard',heroScale:'regular',sectionDensity:'comfortable',ambientEffects:true,
+   showHeroVisual:true,showCommunity:true,showFounder:true,showContactWidget:true,
   logoData:'',heroImageData:''
 });
 function validBrand(body) {
@@ -150,7 +152,10 @@ function validBrand(body) {
     defaultTheme:['dark','light','system'],
     motionLevel:['enhanced','balanced','off'],
     fontFamily:['manrope','inter','spacegrotesk'],
-    radiusStyle:['rounded','soft','sharp']
+    radiusStyle:['rounded','soft','sharp'],
+     siteWidth:['standard','wide','full'],
+     heroScale:['regular','large','statement'],
+     sectionDensity:['compact','comfortable','cinematic']
   })){
     if(body[key]!==undefined){
       if(typeof body[key]!=='string'||!values.includes(body[key])) throw new Error('Invalid appearance setting: '+key);
@@ -161,7 +166,13 @@ function validBrand(body) {
     if(typeof body.allowThemeToggle!=='boolean') throw new Error('Invalid theme toggle setting');
     clean.allowThemeToggle=body.allowThemeToggle;
   }
-  if(body.contactNumber!==undefined){
+  for(const key of ['ambientEffects','showHeroVisual','showCommunity','showFounder','showContactWidget']){
+     if(body[key]!==undefined){
+       if(typeof body[key]!=='boolean')throw new Error('Invalid visual setting: '+key);
+       clean[key]=body[key];
+     }
+   }
+   if(body.contactNumber!==undefined){
     if(!/^[0-9]{10,16}$/.test(body.contactNumber)) throw new Error('Contact number must include country code and digits only');
     clean.contactNumber=body.contactNumber;
   }

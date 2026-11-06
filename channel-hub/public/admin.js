@@ -88,7 +88,15 @@ const groups=[
   ['fontFamily','Typography','select',0,[['manrope','Manrope + DM Sans'],['inter','Inter'],['spacegrotesk','Space Grotesk']]],
   ['radiusStyle','Corner style','select',0,[['rounded','Rounded'],['soft','Soft'],['sharp','Sharp']]],
   ['motionLevel','Animation intensity','select',0,[['enhanced','Enhanced'],['balanced','Balanced'],['off','No motion']]],
-  ['allowThemeToggle','Let visitors switch themes','checkbox',0]
+  ['allowThemeToggle','Let visitors switch themes','checkbox',0],
+  ['siteWidth','Page content width','select',0,[['standard','Standard · 1280px'],['wide','Wide · 1480px'],['full','Full · 1680px']]],
+  ['heroScale','Hero heading scale','select',0,[['regular','Balanced'],['large','Large'],['statement','Statement']]],
+  ['sectionDensity','Section vertical spacing','select',0,[['compact','Compact'],['comfortable','Comfortable'],['cinematic','Cinematic']]],
+  ['ambientEffects','Ambient background glow','checkbox',0],
+  ['showHeroVisual','Display hero artwork','checkbox',0],
+  ['showCommunity','Display Community section','checkbox',0],
+  ['showFounder','Display Founder section','checkbox',0],
+  ['showContactWidget','Display floating WhatsApp button','checkbox',0]
  ]}
 ];
 const maxColor=s=>/^#[0-9a-f]{6}$/i.test(s||'')?s:'#a8ffbf';
@@ -215,6 +223,9 @@ function renderPreview(){
  const font={manrope:"'Manrope',sans-serif",inter:"'Inter',sans-serif",spacegrotesk:"'Space Grotesk',sans-serif"};
  preview.style.setProperty('--preview-font',font[b.fontFamily]||font.manrope);
  preview.dataset.previewRadius=b.radiusStyle||'rounded';
+  preview.dataset.previewScale=b.heroScale||'regular';
+  preview.dataset.previewDensity=b.sectionDensity||'comfortable';
+  preview.style.setProperty('--preview-glow',b.ambientEffects===false?'0':'.15');
  $('previewName').textContent=b.brandName||'A-X-HK';
  $('previewTagline').textContent=b.brandTagline||'OFFICIAL NETWORK';
  $('previewHeading').textContent=b.heroTitle||'Share your community.';

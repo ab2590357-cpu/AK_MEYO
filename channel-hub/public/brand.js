@@ -40,6 +40,8 @@ const defaults={
   accentColor:'#a8ffbf',backgroundColor:'#090f0e',surfaceColor:'#121b19',darkTextColor:'#f5fff7',
   lightBackgroundColor:'#f2f6f2',lightSurfaceColor:'#ffffff',lightTextColor:'#12231b',
   defaultTheme:'dark',motionLevel:'enhanced',fontFamily:'manrope',radiusStyle:'rounded',allowThemeToggle:true,
+  siteWidth:'standard',heroScale:'regular',sectionDensity:'comfortable',ambientEffects:true,
+  showHeroVisual:true,showCommunity:true,showFounder:true,showContactWidget:true,
   logoData:'',heroImageData:''
 };
 window.AXHK_BRAND_DEFAULTS={...defaults};
@@ -69,6 +71,13 @@ function apply(b){
  root.style.setProperty('--font-display',family[0]);root.style.setProperty('--font-body',family[1]);
  root.dataset.radius=['rounded','soft','sharp'].includes(b.radiusStyle)?b.radiusStyle:'rounded';
  root.dataset.motion=['enhanced','balanced','off'].includes(b.motionLevel)?b.motionLevel:'enhanced';
+ root.dataset.siteWidth=['standard','wide','full'].includes(b.siteWidth)?b.siteWidth:'standard';
+ root.dataset.heroScale=['regular','large','statement'].includes(b.heroScale)?b.heroScale:'regular';
+ root.dataset.sectionDensity=['compact','comfortable','cinematic'].includes(b.sectionDensity)?b.sectionDensity:'comfortable';
+ root.dataset.ambientEffects=b.ambientEffects===false?'off':'on';
+ for(const [selector,enabled] of [['.hero-visual',b.showHeroVisual],['.community-band',b.showCommunity],['.axhk-founder',b.showFounder],['#contactWidget',b.showContactWidget]]){
+   document.querySelectorAll(selector).forEach(node=>{node.hidden=enabled===false});
+ }
  if(typeof window.AXHK_THEME_CONFIG==='function')window.AXHK_THEME_CONFIG(b);
  [
   'brandName','brandTagline','heroEyebrow','heroBadge','heroDescription','headerChannelLabel','headerSubmitLabel',
