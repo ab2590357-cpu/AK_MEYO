@@ -97,6 +97,8 @@ test('premium theme settings reject unsafe values before Supabase write',async()
     let requests=0;global.fetch=async()=>{requests++;throw Error('Database must not be touched');};
     const headers={authorization:'Bearer '+'d'.repeat(64)};
     for(const branding of [{defaultTheme:'javascript:alert(1)'},{motionLevel:'infinite'},
+      {siteWidth:'unbounded'},{heroScale:'giant'},{sectionDensity:'radical'},
+      {ambientEffects:'true'},{showContactWidget:'false'},{showFounder:12},
       {fontFamily:'@import evil'},{radiusStyle:'50vw'},{allowThemeToggle:'false'},
       {heroImageData:'data:image/svg+xml;base64,PHN2Zz4='},{lightTextColor:'var(--hack)'},
       {logoData:'data:image/webp;base64,'+'A'.repeat(225000),heroImageData:'data:image/webp;base64,'+'A'.repeat(240000)}]){
@@ -111,5 +113,9 @@ test('unconfigured branding includes premium appearance defaults without secret 
   assert.equal(x.body.branding.defaultTheme,'dark');
   assert.equal(x.body.branding.allowThemeToggle,true);
   assert.equal(x.body.branding.motionLevel,'enhanced');
+  assert.equal(x.body.branding.siteWidth,'standard');
+  assert.equal(x.body.branding.heroScale,'regular');
+  assert.equal(x.body.branding.sectionDensity,'comfortable');
+  assert.equal(x.body.branding.showContactWidget,true);
   assert.ok(!JSON.stringify(x.body.branding).includes('WORKER_TOKEN'));
 });
