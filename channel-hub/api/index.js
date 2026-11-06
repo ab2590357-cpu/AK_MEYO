@@ -83,8 +83,35 @@ const BRAND_DEFAULTS = Object.freeze({
   contactNumber:'923044596780',contactLabel:'Chat with Abdullah',
   founderName:'ABDULLAH-X-HACKER',
   founderDescription:'Building a connected network of creators, groups and channels.',
-  accentColor:'#a8ffbf', backgroundColor:'#090f0e',surfaceColor:'#121b19',
-  logoData:''
+  headerChannelLabel:'Explore Channel',headerSubmitLabel:'Submit Link',
+  heroPrimaryLabel:'Submit your link',heroSecondaryLabel:'Explore the Channel',heroBadge:'CONNECTED COMMUNITY NETWORK',
+  trustOne:'Official WhatsApp invites',trustTwo:'12-hour fair-use cooldown',trustThree:'Publishing when bot is online',
+  sectionHeadingTitle:'Put your link',sectionHeadingHighlight:'in motion.',
+  sectionHeadingDescription:'Share an invitation. Follow its real publishing status. Every successful post leads directly to the official Channel.',
+  formHelper:'Official invitation links only. Verified posting requires the WhatsApp bot to be connected.',
+  formFooterLeft:'ENCRYPTED TRANSFER',formFooterRight:'STATUS UPDATED AUTOMATICALLY',
+  visualCardTitle:'Community first',visualCardText:'One link. Wider reach.',
+  communityEyebrow:'THE A-X-HK NETWORK',communityTitle:'Community without',communityHighlight:'limits to discovery.',
+  communityDescription:'Discover our official WhatsApp Channel and connect through shared communities.',
+  communityButton:'Explore Official Channel',
+  footerExploreTitle:'Explore',footerConnectTitle:'Connect',
+  footerHomeLabel:'Home',footerSubmitLabel:'Submit link',footerHowLabel:'How it works',
+  footerChannelLabel:'WhatsApp Channel',footerSupportLabel:'WhatsApp support',footerStudioLabel:'Owner Studio',
+  howTitle:'From your link to our Channel.',howDescription:'One submission, a verified bot and a clear publishing status.',
+  step1Title:'Paste your invitation',step1Description:'Share an invite for a WhatsApp Group or Channel you manage.',
+  step2Title:'Instant validation',step2Description:'We check the format, duplicates and fair-use cooldown.',
+  step3Title:'Verified Channel post',step3Description:'Our connected bot posts automatically; we show confirmation when WhatsApp returns a receipt.',
+  cooldownTitle:'A fair space for every community',cooldownText:'Public visitors can submit one link per 12 hours. Owner submissions are managed separately.',
+  failedTitle:'This link needs review',failedText:'A confirmed Channel post is not available. Please contact the owner for help.',
+  channelButtonNote:'Open the official Channel to see the latest posts.',
+  founderEyebrow:'FOUNDER & COMMUNITY SUPPORT',founderButton:'Connect with Abdullah',
+  footerDescription:'Your community deserves the right audience. Discover, connect and grow through our verified WhatsApp network.',
+  footerCopyright:'© 2026 A-X-HK. Powered by ABDULLAH-X-HACKER.',
+  footerNote:'Automated publishing depends on an active verified bot connection.',
+  accentColor:'#a8ffbf', backgroundColor:'#090f0e',surfaceColor:'#121b19',darkTextColor:'#f5fff7',
+  lightBackgroundColor:'#f2f6f2',lightSurfaceColor:'#ffffff',lightTextColor:'#12231b',
+  defaultTheme:'dark',motionLevel:'enhanced',fontFamily:'manrope',radiusStyle:'rounded',allowThemeToggle:true,
+  logoData:'',heroImageData:''
 });
 function validBrand(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Brand settings object required');
@@ -94,7 +121,18 @@ function validBrand(body) {
     heroDescription:450,eyebrow:100,submitTitle:80,submitDescription:260,
     submitButton:80,acceptedTitle:100,acceptedText:260,postedTitle:100,
     postedText:260,channelButton:85,pendingTitle:100,pendingText:250,
-    contactLabel:65,founderName:90,founderDescription:260
+    contactLabel:65,founderName:90,founderDescription:260,
+    headerChannelLabel:45,headerSubmitLabel:45,heroPrimaryLabel:65,heroSecondaryLabel:65,heroBadge:100,
+    trustOne:95,trustTwo:95,trustThree:95,
+    sectionHeadingTitle:90,sectionHeadingHighlight:90,sectionHeadingDescription:250,
+    formHelper:230,formFooterLeft:70,formFooterRight:70,visualCardTitle:65,visualCardText:65,
+    communityEyebrow:90,communityTitle:100,communityHighlight:100,communityDescription:240,communityButton:80,
+    footerExploreTitle:50,footerConnectTitle:50,footerHomeLabel:60,footerSubmitLabel:60,footerHowLabel:60,
+    footerChannelLabel:70,footerSupportLabel:70,footerStudioLabel:70,
+    howTitle:110,howDescription:250,
+    step1Title:85,step1Description:190,step2Title:85,step2Description:190,step3Title:85,step3Description:190,
+    cooldownTitle:95,cooldownText:260,failedTitle:100,failedText:270,
+    channelButtonNote:190,founderEyebrow:65,founderButton:65,footerDescription:320,footerCopyright:140,footerNote:250
   };
   for(const [key,max] of Object.entries(textLimits)){
     if(body[key]!==undefined){
@@ -102,11 +140,26 @@ function validBrand(body) {
       clean[key]=body[key].trim();
     }
   }
-  for(const key of ['accentColor','backgroundColor','surfaceColor']){
+  for(const key of ['accentColor','backgroundColor','surfaceColor','lightBackgroundColor','lightSurfaceColor','lightTextColor','darkTextColor']){
     if(body[key]!==undefined){
       if(typeof body[key]!=='string'||!/^#[0-9a-fA-F]{6}$/.test(body[key])) throw new Error('Invalid color: '+key);
       clean[key]=body[key];
     }
+  }
+  for(const [key,values] of Object.entries({
+    defaultTheme:['dark','light','system'],
+    motionLevel:['enhanced','balanced','off'],
+    fontFamily:['manrope','inter','spacegrotesk'],
+    radiusStyle:['rounded','soft','sharp']
+  })){
+    if(body[key]!==undefined){
+      if(typeof body[key]!=='string'||!values.includes(body[key])) throw new Error('Invalid appearance setting: '+key);
+      clean[key]=body[key];
+    }
+  }
+  if(body.allowThemeToggle!==undefined){
+    if(typeof body.allowThemeToggle!=='boolean') throw new Error('Invalid theme toggle setting');
+    clean.allowThemeToggle=body.allowThemeToggle;
   }
   if(body.contactNumber!==undefined){
     if(!/^[0-9]{10,16}$/.test(body.contactNumber)) throw new Error('Contact number must include country code and digits only');
@@ -117,12 +170,18 @@ function validBrand(body) {
     if(parsed.kind!=='channel') throw new Error('Enter a valid WhatsApp Channel link');
     clean.channelUrl=parsed.link;
   }
-  if(body.logoData!==undefined){
-    const logo=body.logoData;
-    if(typeof logo!=='string'||logo.length>240000|| (logo && !/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/]+=*$/.test(logo)))
-      throw new Error('Logo must be a compressed JPG/PNG/WebP image under 180 KB');
-    clean.logoData=logo;
+  for(const [field,max] of Object.entries({logoData:240000,heroImageData:270000})){
+    if(body[field]===undefined)continue;
+    const image=body[field];
+    if(typeof image!=='string'||image.length>max||
+       (image && !/^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/]+=*$/.test(image)))
+      throw new Error(field+' must be a compressed JPG/PNG/WebP data image within the limit');
+    clean[field]=image;
   }
+  // The existing Supabase brand RPC has a 480KB absolute limit. Keep a safety
+  // margin for UTF-8 text, escaping and database serialization.
+  if(Buffer.byteLength(JSON.stringify(clean),'utf8')>450000)
+    throw new Error('Brand settings exceed the storage limit. Compress the logo or hero image.');
   return clean;
 }
 async function readBrand(){

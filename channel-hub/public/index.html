@@ -1,28 +1,109 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b1211"><meta name="description" content="Share your WhatsApp group or channel with our community.">
-<title>A-X-HK | ABDULLAH-X-HACKER</title><link rel="stylesheet" href="/style.css"></head>
-<body><div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
-<header class="topbar"><a class="brand" href="/" aria-label="A-X-HK Channel Hub home"><span class="brand-mark brand-image"><img id="siteLogo" src="" alt="A-X-HK logo" decoding="async"><span class="logo-fallback">AX</span></span><span><span id="brandName">A-X-HK</span><small id="brandTagline">OFFICIAL NETWORK</small></span></a>
-<div class="topright"><span class="live-dot"></span><span>PUBLIC LINK PORTAL</span></div></header>
-<main><section class="intro"><div class="eyebrow" id="heroEyebrow">✦ &nbsp; COMMUNITY DISCOVERY NETWORK &nbsp; ✦</div>
-<h1>Make your <em>community</em><br>discoverable.</h1>
-<p class="lead">Share your WhatsApp Group or Channel with our community. Submit one link every 12 hours. We take care of the rest.</p>
-<div class="pills"><span>✓ &nbsp;Group &amp; Channel links</span><span>✓ &nbsp;12-hour cooldown</span><span>✓ &nbsp;Automatic publishing*</span></div></section>
-<div class="layout"><section class="panel submit-panel"><div class="section-number">01 / SUBMISSION</div><h2 id="submitTitle">Share your link</h2><p class="subline" id="submitDescription">Paste an invitation link below. Only official WhatsApp invitation URLs are accepted.</p>
-<form id="submitForm" novalidate><label for="link">WHATSAPP INVITE LINK</label>
-<div class="input-shell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>
-<input id="link" type="url" placeholder="https://whatsapp.com/channel/..." autocomplete="url" required maxlength="250"></div>
-<input type="text" class="honeypot" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-<div class="explain"><div class="explain-icon">✦</div><span>Submit your invite once. Our connected bot will automatically publish it to the official WhatsApp Channel without manual approval.</span></div>
-<button type="submit" id="send" class="button-primary"><span id="buttonLabel">Submit &amp; auto-publish link</span><span aria-hidden="true">↗</span></button>
-<p id="message" class="message" role="status" aria-live="polite"></p></form>
-<div id="submitted" class="submitted hidden"><div class="success-mark">✓</div><h3 id="submissionHeading" aria-live="polite">Link accepted!</h3><p id="submissionCopy">Your link has been submitted. Our bot is publishing it automatically.</p><div class="status-line"><span>Posting status</span><strong id="postingStatus">Pending</strong></div><div class="status-line"><span>Next submission</span><strong id="countdown">12 hours</strong></div><a id="visitChannel" class="button-primary channel-visit-button" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer"><span id="visitChannelLabel">Open our WhatsApp Channel ↗</span><span aria-hidden="true">↗</span></a><p id="channelButtonNote" class="channel-button-note">Check the official Channel. We will confirm here when your link has been published.</p><button id="resetView" class="button-secondary">View form</button></div>
-</section>
-<aside class="side"><div class="side-panel"><div class="section-number">02 / HOW IT WORKS</div><h2>Three simple steps.</h2>
-<div class="step"><b>01</b><div><strong>Submit a link</strong><p>Share your own group or channel invite.</p></div></div>
-<div class="step"><b>02</b><div><strong>We validate it</strong><p>Spam checks and a 12-hour cooldown protect the community.</p></div></div>
-<div class="step"><b>03</b><div><strong>Automatic Channel post</strong><p>Our bot publishes it without owner approval and includes the A-X-HK website link.</p></div></div></div>
-<div class="help-panel"><div class="help-icon">⏱</div><div><strong>One link per 12 hours</strong><p>We apply a browser and network cooldown to reduce spam.</p></div></div></aside></div>
-<footer><div><strong>A-X-HK</strong> <span>— Channel Link Hub</span></div><span>*Automatic posting requires an online worker and supported WhatsApp connection.</span></footer>
-</main><script src="/app.js" defer></script><script src="/contact.js" defer></script><script src="/brand.js" defer></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090f0e"><meta name="description" content="Discover WhatsApp communities with A-X-HK. Submit your Group or Channel invitation and follow its verified posting status.">
+  <title>A-X-HK • Premium Community Link Hub</title>
+  <link rel="icon" href="/axhk-logo.webp" type="image/webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+  <script>try{const t=localStorage.getItem('axhk-theme-choice');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script>
+</head>
+<body>
+  <div class="ambient ambient-one" aria-hidden="true"></div><div class="ambient ambient-two" aria-hidden="true"></div>
+  <div class="site-shell">
+    <header class="topbar" id="top">
+      <a class="brand" href="/" aria-label="A-X-HK home">
+        <span class="brand-mark brand-image"><img id="siteLogo" src="/axhk-logo.webp" alt="A-X-HK official logo" width="52" height="52"></span>
+        <span class="brand-name-stack"><strong id="brandName">A-X-HK</strong><small id="brandTagline">OFFICIAL NETWORK</small></span>
+      </a>
+      <nav class="axhk-nav" id="mainNav" aria-label="Main navigation">
+        <a href="#how-it-works">How it works</a>
+        <a href="#community">Community</a>
+        <a class="axhk-channel-link" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer" id="headerChannelLabel">Explore Channel</a>
+        <a class="nav-submit" href="#submit" id="headerSubmitLabel">Submit link <span aria-hidden="true">↗</span></a>
+      </nav>
+      <div class="nav-actions">
+        <button id="themeToggle" class="icon-button theme-toggle" type="button" aria-label="Switch to light theme" title="Switch appearance"><span class="theme-icon" aria-hidden="true">☀</span></button>
+        <button id="mobileMenuToggle" class="icon-button mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="Open menu"><span aria-hidden="true">☰</span></button>
+      </div>
+    </header>
+    <main>
+      <section class="intro axhk-hero" id="home" aria-labelledby="heroTitle">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="signal-small"></span><span id="heroEyebrow">✦ COMMUNITY DISCOVERY NETWORK ✦</span></div>
+          <div class="hero-badge" id="heroBadge">CONNECTED COMMUNITY NETWORK</div>
+          <h1 id="heroTitle"><span id="heroTitleLine">Share your community.</span> <em id="heroHighlight">Grow together.</em></h1>
+          <p class="lead" id="heroDescription">Your WhatsApp Group or Channel deserves to be discovered. Share your invite link and connect with A-X-HK.</p>
+          <div class="axhk-hero-ctas">
+            <a class="axhk-main-cta" id="heroPrimaryLabel" href="#submit"><span>Submit your link</span><span class="btn-arrow" aria-hidden="true">↗</span></a>
+            <a class="axhk-ghost-cta" id="heroSecondaryLabel" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer"><span>Explore the Channel</span><span aria-hidden="true">→</span></a>
+          </div>
+          <div class="pills" aria-label="Service features"><span><i aria-hidden="true">✓</i><span id="trustOne">Official WhatsApp invites</span></span><span><i aria-hidden="true">✓</i><span id="trustTwo">12-hour fair-use cooldown</span></span><span><i aria-hidden="true">✓</i><span id="trustThree">Publishing when bot is online</span></span></div>
+        </div>
+        <div class="hero-visual" aria-label="A-X-HK network visualization">
+          <div class="visual-glow" aria-hidden="true"></div>
+          <div class="visual-frame">
+            <div class="visual-topline"><span>NETWORK / A-X-HK</span><span class="visual-topright">2026 <i aria-hidden="true">✦</i></span></div>
+            <div class="visual-center">
+              <div class="axhk-hero-ring" aria-hidden="true"><div class="axhk-hero-ring-inner"></div></div>
+              <div class="hero-image-stage"><img id="heroImage" src="/axhk-logo.webp" alt="" width="198" height="198"></div>
+              <div class="visual-orbit-label orbit-a">DISCOVER</div><div class="visual-orbit-label orbit-b">CONNECT</div>
+            </div>
+            <div class="visual-bottomline"><div><small>OFFICIAL CONNECTION</small><strong id="heroServiceStatus">Checking network…</strong></div><span class="status-beacon" id="heroServiceDot" aria-hidden="true"></span></div>
+          </div>
+          <div class="visual-floating-card"><span class="floating-icon">↗</span><span><strong id="visualCardTitle">Community first</strong><small id="visualCardText">One link. Wider reach.</small></span></div>
+        </div>
+      </section>
+      <div class="section-heading-row" id="submit"><div><span class="section-number">01 / COMMUNITY SUBMISSION</span><h2><span id="sectionHeadingTitle">Put your link</span> <em id="sectionHeadingHighlight">in motion.</em></h2></div><p id="sectionHeadingDescription">Share an invitation. Follow its real publishing status. Every successful post leads directly to the official Channel.</p></div>
+      <div class="layout">
+        <section class="panel submit-panel" aria-labelledby="submitTitle">
+          <div class="panel-topline"><span class="panel-status"><span class="mini-dot"></span><span id="formServiceStatus">Checking publishing service</span></span><span class="panel-index">A—01</span></div>
+          <h2 id="submitTitle">Share your link</h2><p class="subline" id="submitDescription">Paste an invitation link below. Only official WhatsApp invitation URLs are accepted.</p>
+          <form id="submitForm" novalidate>
+            <label for="link" class="field-label">WHATSAPP GROUP OR CHANNEL INVITATION</label>
+            <div class="input-shell">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.7-1.7"/></svg>
+              <input id="link" name="link" type="url" placeholder="https://chat.whatsapp.com/..." autocomplete="url" required maxlength="250" aria-describedby="linkHelp message">
+              <span class="link-type" id="linkTypeTag">INVITE LINK</span>
+            </div>
+            <input type="text" class="honeypot" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <div class="explain" id="linkHelp"><span class="explain-icon" aria-hidden="true">✧</span><span id="formHelper">Official invitation links only. Verified posting requires the WhatsApp bot to be connected.</span></div>
+            <button type="submit" id="send" class="button-primary" disabled><span id="buttonLabel">Checking bot status…</span><span class="btn-arrow" aria-hidden="true">↗</span></button>
+            <p id="message" class="message" role="status" aria-live="polite"></p>
+          </form>
+          <div id="submitted" class="submitted hidden" aria-live="polite">
+            <div class="submission-banner"><span class="success-mark" id="resultSymbol" aria-hidden="true">⌁</span><span class="result-kicker">YOUR SUBMISSION</span></div>
+            <h3 id="submissionHeading">Link accepted!</h3><p id="submissionCopy">Our bot is publishing it automatically.</p>
+            <div class="status-grid"><div class="status-line"><span>Publishing status</span><strong id="postingStatus">Checking…</strong></div><div class="status-line"><span>Next public submission</span><strong id="countdown">12 hours</strong></div></div>
+            <a id="visitChannel" class="button-primary channel-visit-button hidden" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer"><span id="visitChannelLabel">Open WhatsApp Channel</span><span aria-hidden="true">↗</span></a>
+            <p id="channelButtonNote" class="channel-button-note hidden">Your verified post is available on the official Channel.</p>
+            <button id="resetView" type="button" class="button-secondary">Back to form</button>
+          </div>
+          <div class="submit-foot"><span id="formFooterLeft">ENCRYPTED TRANSFER</span><span id="formFooterRight">STATUS UPDATED AUTOMATICALLY</span></div>
+        </section>
+        <aside class="side" id="how-it-works">
+          <div class="side-panel">
+            <span class="section-number">02 / PROCESS</span><h2 id="howTitle">From your link to our Channel.</h2><p class="side-intro" id="howDescription">One submission, a verified bot and a clear publishing status.</p>
+            <div class="step"><b>01</b><div><strong id="step1Title">Paste your invitation</strong><p id="step1Description">Share an invite for a WhatsApp Group or Channel you manage.</p></div></div>
+            <div class="step"><b>02</b><div><strong id="step2Title">Instant validation</strong><p id="step2Description">We check the format, duplicates and fair-use cooldown.</p></div></div>
+            <div class="step"><b>03</b><div><strong id="step3Title">Verified Channel post</strong><p id="step3Description">Our connected bot posts automatically; we show confirmation when WhatsApp returns a receipt.</p></div></div>
+          </div>
+          <div class="help-panel"><div class="help-icon" aria-hidden="true">◷</div><div><strong id="cooldownTitle">A fair space for every community</strong><p id="cooldownText">Public visitors can submit one link per 12 hours. Owner submissions are managed separately.</p></div></div>
+        </aside>
+      </div>
+      <section class="community-band" id="community"><div class="community-spark" aria-hidden="true">✦</div><div><div class="section-number" id="communityEyebrow">THE A-X-HK NETWORK</div><h2><span id="communityTitle">Community without</span> <em id="communityHighlight">limits to discovery.</em></h2><p id="communityDescription">Discover our official WhatsApp Channel and connect through shared communities.</p></div><a class="axhk-ghost-cta axhk-channel-link" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer"><span id="communityButton">Explore Official Channel</span> <span aria-hidden="true">↗</span></a></section>
+      <section class="axhk-founder" aria-labelledby="founderName"><div class="axhk-founder-mark" aria-hidden="true">AX<span>HK</span></div><div class="axhk-founder-body"><small id="founderEyebrow">FOUNDER & COMMUNITY SUPPORT</small><h2 id="founderName">ABDULLAH-X-HACKER</h2><p id="founderDescription">Building a connected network of creators, groups and channels.</p></div><a class="axhk-founder-cta" id="founderButton" target="_blank" rel="noopener noreferrer" href="https://wa.me/923044596780">Connect with Abdullah <span aria-hidden="true">↗</span></a></section>
+    </main>
+    <footer class="site-footer">
+      <div class="footer-top"><div class="footer-brand"><div class="footer-brand-name">A-X-HK <span>✦</span></div><p id="footerDescription">Your community deserves the right audience. Discover, connect and grow through our verified WhatsApp network.</p></div><div class="footer-links"><div><strong id="footerExploreTitle">Explore</strong><a id="footerHomeLabel" href="#home">Home</a><a id="footerSubmitLabel" href="#submit">Submit link</a><a id="footerHowLabel" href="#how-it-works">How it works</a></div><div><strong id="footerConnectTitle">Connect</strong><a class="axhk-channel-link" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer"><span id="footerChannelLabel">WhatsApp Channel</span> ↗</a><a id="footerContact" href="https://wa.me/923044596780" target="_blank" rel="noopener noreferrer"><span id="footerSupportLabel">WhatsApp support</span> ↗</a><a id="footerStudioLabel" href="/admin.html">Owner Studio</a></div></div></div>
+      <div class="footer-bottom"><span id="footerCopyright">© 2026 A-X-HK. Powered by ABDULLAH-X-HACKER.</span><span id="footerNote">Automated publishing depends on an active verified bot connection.</span><a href="#top" aria-label="Back to top">↑ Back to top</a></div>
+    </footer>
+  </div>
+  <a class="axhk-contact" id="contactWidget" href="https://wa.me/923044596780" target="_blank" rel="noopener noreferrer" aria-label="Chat with Abdullah on WhatsApp">
+    <svg viewBox="0 0 32 32" aria-hidden="true" fill="currentColor"><path d="M16 1.1A14.9 14.9 0 0 0 3.3 23.8L1.4 31l7.3-1.9a14.9 14.9 0 1 0 7.3-28Zm0 27.1c-2.2 0-4.4-.6-6.3-1.7l-.5-.3-4.3 1.1L6 23.1l-.3-.5A12.3 12.3 0 1 1 16 28.2Zm7-9.2c-.4-.2-2.2-1.1-2.6-1.2s-.6-.2-.9.2c-.3.4-1 1.2-1.2 1.4-.2.3-.5.3-.9.1-.4-.2-1.7-.6-3.1-1.9-1.2-1-2-2.3-2.2-2.7-.2-.4 0-.6.2-.8l.6-.7.4-.6c.1-.2.1-.4 0-.7-.1-.2-.9-2.2-1.2-3-.3-.7-.6-.6-.9-.6h-.8c-.3 0-.7.1-1.1.5-.4.4-1.5 1.4-1.5 3.4s1.5 4 1.7 4.2c.2.3 2.9 4.5 7 6.3 1 .4 1.8.7 2.4.8 1 .3 1.9.2 2.6.2.8-.1 2.2-.9 2.5-1.8.3-.9.3-1.7.2-1.8-.1-.2-.3-.3-.7-.5Z"/></svg>
+    <span class="axhk-contact-label">Chat with Abdullah</span>
+  </a>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+  <script src="/contact.js" defer></script><script src="/brand.js" defer></script><script src="/app.js" defer></script><script src="/motion.js" defer></script>
+</body></html>

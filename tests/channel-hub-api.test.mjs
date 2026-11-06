@@ -87,3 +87,29 @@ test('unauthorized user cannot save branding',async()=>{
     assert.equal(response.status,401);assert.equal(called,0);
   }finally{process.env=old;global.fetch=fetchBefore;}
 });
+
+test('premium theme settings reject unsafe values before Supabase write',async()=>{
+  const old={...process.env},before=global.fetch;
+  try{
+    Object.assign(process.env,{SUPABASE_URL:'https://example.supabase.co',
+      EDGE_PROXY_TOKEN:'a'.repeat(64),HASH_SALT:'b'.repeat(64),
+      WORKER_TOKEN:'c'.repeat(64),ADMIN_TOKEN:'d'.repeat(64),CHANNEL_HUB_ENABLED:'true'});
+    let requests=0;global.fetch=async()=>{requests++;throw Error('Database must not be touched');};
+    const headers={authorization:'Bearer '+'d'.repeat(64)};
+    for(const branding of [{defaultTheme:'javascript:alert(1)'},{motionLevel:'infinite'},
+      {fontFamily:'@import evil'},{radiusStyle:'50vw'},{allowThemeToggle:'false'},
+      {heroImageData:'data:image/svg+xml;base64,PHN2Zz4='},{lightTextColor:'var(--hack)'},
+      {logoData:'data:image/webp;base64,'+'A'.repeat(225000),heroImageData:'data:image/webp;base64,'+'A'.repeat(240000)}]){
+      const result=await run({mode:'admin',method:'POST',headers,body:{action:'saveBrand',branding}});
+      assert.equal(result.status,400,JSON.stringify(branding));
+    }
+    assert.equal(requests,0);
+  }finally{process.env=old;global.fetch=before;}
+});
+test('unconfigured branding includes premium appearance defaults without secret fields',async()=>{
+  const x=await run({mode:'brand'});
+  assert.equal(x.body.branding.defaultTheme,'dark');
+  assert.equal(x.body.branding.allowThemeToggle,true);
+  assert.equal(x.body.branding.motionLevel,'enhanced');
+  assert.ok(!JSON.stringify(x.body.branding).includes('WORKER_TOKEN'));
+});
