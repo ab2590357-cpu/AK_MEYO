@@ -8,6 +8,9 @@ on:
       - ".github/workflows/premium-link-hub-browser.yml"
   push:
     branches: ["design/premium-channel-hub-v2", "feature/channel-link-hub"]
+concurrency:
+  group: premium-link-hub-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -24,9 +27,8 @@ jobs:
       - name: Install pinned browser test packages
         working-directory: .github/ui-tests
         run: npm install --ignore-scripts --no-fund --no-audit --no-package-lock
-      - name: Install Chromium
-        working-directory: .github/ui-tests
-        run: npx playwright install --with-deps chromium
+      - name: Verify GitHub runner Chrome
+        run: google-chrome --version
       - name: Run browser regression QA
         working-directory: .github/ui-tests
         run: node --test portal.spec.mjs
