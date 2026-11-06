@@ -15,6 +15,8 @@ const groups=[
  {id:'hero',label:'Header & hero',description:'Navigation links, hero copy, visual image and conversion buttons.',fields:[
   ['headerChannelLabel','Header Channel button','text',45],
   ['headerSubmitLabel','Header submission button','text',45],
+  ['navHowLabel','Header How it works link','text',45],['navCommunityLabel','Header Community link','text',45],
+  ['visualTopLabel','Hero visual network label','text',65],
   ['eyebrow','Hero eyebrow','text',100],
   ['heroBadge','Hero network badge','text',100],
   ['heroTitle','Hero heading — line one','text',100],
@@ -33,6 +35,7 @@ const groups=[
   ['submitTitle','Submission heading','text',80],
   ['submitDescription','Form description','textarea',260],
   ['submitButton','Submit button text','text',80],
+  ['formFieldLabel','Invitation field label','text',95],['formPlaceholder','Invitation placeholder','text',120],
   ['formHelper','Link form helper','textarea',230],
   ['formFooterLeft','Form bottom label (left)','text',70],
   ['formFooterRight','Form bottom label (right)','text',70]
