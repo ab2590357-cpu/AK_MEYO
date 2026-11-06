@@ -52,10 +52,10 @@
             </div>
             <div class="visual-bottomline"><div><small>OFFICIAL CONNECTION</small><strong id="heroServiceStatus">Checking network…</strong></div><span class="status-beacon" id="heroServiceDot" aria-hidden="true"></span></div>
           </div>
-          <div class="visual-floating-card"><span class="floating-icon">↗</span><span><strong>Community first</strong><small>One link. Wider reach.</small></span></div>
+          <div class="visual-floating-card"><span class="floating-icon">↗</span><span><strong id="visualCardTitle">Community first</strong><small id="visualCardText">One link. Wider reach.</small></span></div>
         </div>
       </section>
-      <div class="section-heading-row" id="submit"><div><span class="section-number">01 / COMMUNITY SUBMISSION</span><h2>Put your link <em>in motion.</em></h2></div><p>Share an invitation. Follow its real publishing status. Every successful post leads directly to the official Channel.</p></div>
+      <div class="section-heading-row" id="submit"><div><span class="section-number">01 / COMMUNITY SUBMISSION</span><h2><span id="sectionHeadingTitle">Put your link</span> <em id="sectionHeadingHighlight">in motion.</em></h2></div><p id="sectionHeadingDescription">Share an invitation. Follow its real publishing status. Every successful post leads directly to the official Channel.</p></div>
       <div class="layout">
         <section class="panel submit-panel" aria-labelledby="submitTitle">
           <div class="panel-topline"><span class="panel-status"><span class="mini-dot"></span><span id="formServiceStatus">Checking publishing service</span></span><span class="panel-index">A—01</span></div>
@@ -68,7 +68,7 @@
               <span class="link-type" id="linkTypeTag">INVITE LINK</span>
             </div>
             <input type="text" class="honeypot" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-            <div class="explain" id="linkHelp"><span class="explain-icon" aria-hidden="true">✧</span><span>Official invitation links only. Verified posting requires the WhatsApp bot to be connected.</span></div>
+            <div class="explain" id="linkHelp"><span class="explain-icon" aria-hidden="true">✧</span><span id="formHelper">Official invitation links only. Verified posting requires the WhatsApp bot to be connected.</span></div>
             <button type="submit" id="send" class="button-primary" disabled><span id="buttonLabel">Checking bot status…</span><span class="btn-arrow" aria-hidden="true">↗</span></button>
             <p id="message" class="message" role="status" aria-live="polite"></p>
           </form>
@@ -80,7 +80,7 @@
             <p id="channelButtonNote" class="channel-button-note hidden">Your verified post is available on the official Channel.</p>
             <button id="resetView" type="button" class="button-secondary">Back to form</button>
           </div>
-          <div class="submit-foot"><span>ENCRYPTED TRANSFER</span><span>STATUS UPDATED AUTOMATICALLY</span></div>
+          <div class="submit-foot"><span id="formFooterLeft">ENCRYPTED TRANSFER</span><span id="formFooterRight">STATUS UPDATED AUTOMATICALLY</span></div>
         </section>
         <aside class="side" id="how-it-works">
           <div class="side-panel">
@@ -92,11 +92,11 @@
           <div class="help-panel"><div class="help-icon" aria-hidden="true">◷</div><div><strong id="cooldownTitle">A fair space for every community</strong><p id="cooldownText">Public visitors can submit one link per 12 hours. Owner submissions are managed separately.</p></div></div>
         </aside>
       </div>
-      <section class="community-band" id="community"><div class="community-spark" aria-hidden="true">✦</div><div><div class="section-number">THE A-X-HK NETWORK</div><h2>Community without <em>limits to discovery.</em></h2><p>Discover our official WhatsApp Channel and connect through shared communities.</p></div><a class="axhk-ghost-cta axhk-channel-link" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer">Explore Official Channel <span aria-hidden="true">↗</span></a></section>
+      <section class="community-band" id="community"><div class="community-spark" aria-hidden="true">✦</div><div><div class="section-number" id="communityEyebrow">THE A-X-HK NETWORK</div><h2><span id="communityTitle">Community without</span> <em id="communityHighlight">limits to discovery.</em></h2><p id="communityDescription">Discover our official WhatsApp Channel and connect through shared communities.</p></div><a class="axhk-ghost-cta axhk-channel-link" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer"><span id="communityButton">Explore Official Channel</span> <span aria-hidden="true">↗</span></a></section>
       <section class="axhk-founder" aria-labelledby="founderName"><div class="axhk-founder-mark" aria-hidden="true">AX<span>HK</span></div><div class="axhk-founder-body"><small id="founderEyebrow">FOUNDER & COMMUNITY SUPPORT</small><h2 id="founderName">ABDULLAH-X-HACKER</h2><p id="founderDescription">Building a connected network of creators, groups and channels.</p></div><a class="axhk-founder-cta" id="founderButton" target="_blank" rel="noopener noreferrer" href="https://wa.me/923044596780">Connect with Abdullah <span aria-hidden="true">↗</span></a></section>
     </main>
     <footer class="site-footer">
-      <div class="footer-top"><div class="footer-brand"><div class="footer-brand-name">A-X-HK <span>✦</span></div><p id="footerDescription">Your community deserves the right audience. Discover, connect and grow through our verified WhatsApp network.</p></div><div class="footer-links"><div><strong>Explore</strong><a href="#home">Home</a><a href="#submit">Submit link</a><a href="#how-it-works">How it works</a></div><div><strong>Connect</strong><a class="axhk-channel-link" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer">WhatsApp Channel ↗</a><a id="footerContact" href="https://wa.me/923044596780" target="_blank" rel="noopener noreferrer">WhatsApp support ↗</a><a href="/admin.html">Owner Studio</a></div></div></div>
+      <div class="footer-top"><div class="footer-brand"><div class="footer-brand-name">A-X-HK <span>✦</span></div><p id="footerDescription">Your community deserves the right audience. Discover, connect and grow through our verified WhatsApp network.</p></div><div class="footer-links"><div><strong id="footerExploreTitle">Explore</strong><a id="footerHomeLabel" href="#home">Home</a><a id="footerSubmitLabel" href="#submit">Submit link</a><a id="footerHowLabel" href="#how-it-works">How it works</a></div><div><strong id="footerConnectTitle">Connect</strong><a class="axhk-channel-link" href="https://whatsapp.com/channel/0029VbA4HK9LNSaApTeufD1F" target="_blank" rel="noopener noreferrer"><span id="footerChannelLabel">WhatsApp Channel</span> ↗</a><a id="footerContact" href="https://wa.me/923044596780" target="_blank" rel="noopener noreferrer"><span id="footerSupportLabel">WhatsApp support</span> ↗</a><a id="footerStudioLabel" href="/admin.html">Owner Studio</a></div></div></div>
       <div class="footer-bottom"><span id="footerCopyright">© 2026 A-X-HK. Powered by ABDULLAH-X-HACKER.</span><span id="footerNote">Automated publishing depends on an active verified bot connection.</span><a href="#top" aria-label="Back to top">↑ Back to top</a></div>
     </footer>
   </div>

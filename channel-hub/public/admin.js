@@ -20,15 +20,22 @@ const groups=[
   ['heroTitle','Hero heading — line one','text',100],
   ['heroHighlight','Hero highlighted line','text',100],
   ['heroDescription','Hero description','textarea',450],
+  ['visualCardTitle','Hero visual card heading','text',65],['visualCardText','Hero visual card description','text',65],
   ['heroPrimaryLabel','Hero primary button','text',65],
   ['heroSecondaryLabel','Hero secondary button','text',65],
   ['heroImageData','Hero feature image','image',480000],
   ['trustOne','First trust item','text',95],['trustTwo','Second trust item','text',95],['trustThree','Third trust item','text',95]
  ]},
  {id:'submission',label:'Submission form',description:'Form heading, helper content and primary submission button.',fields:[
+  ['sectionHeadingTitle','Submission section heading','text',90],
+  ['sectionHeadingHighlight','Section highlighted text','text',90],
+  ['sectionHeadingDescription','Section introduction','textarea',250],
   ['submitTitle','Submission heading','text',80],
   ['submitDescription','Form description','textarea',260],
-  ['submitButton','Submit button text','text',80]
+  ['submitButton','Submit button text','text',80],
+  ['formHelper','Link form helper','textarea',230],
+  ['formFooterLeft','Form bottom label (left)','text',70],
+  ['formFooterRight','Form bottom label (right)','text',70]
  ]},
  {id:'receipt',label:'After submission',description:'Customize every receipt state. The Channel CTA appears only after a verified post.',fields:[
   ['acceptedTitle','Accepted heading','text',100],
@@ -49,7 +56,12 @@ const groups=[
   ['step2Title','Step two heading','text',85],['step2Description','Step two description','textarea',190],
   ['step3Title','Step three heading','text',85],['step3Description','Step three description','textarea',190],
   ['cooldownTitle','Cooldown card title','text',95],
-  ['cooldownText','Cooldown card description','textarea',260]
+  ['cooldownText','Cooldown card description','textarea',260],
+  ['communityEyebrow','Community eyebrow','text',90],
+  ['communityTitle','Community heading','text',100],
+  ['communityHighlight','Community highlighted text','text',100],
+  ['communityDescription','Community description','textarea',240],
+  ['communityButton','Community Channel button','text',80]
  ]},
  {id:'footer',label:'Founder & footer',description:'Founder section, contact call to action and footer copy.',fields:[
   ['founderEyebrow','Founder eyebrow','text',65],
@@ -58,12 +70,17 @@ const groups=[
   ['founderButton','Founder contact button','text',65],
   ['footerDescription','Footer brand description','textarea',320],
   ['footerCopyright','Footer copyright','text',140],
-  ['footerNote','Footer operational note','textarea',250]
+  ['footerNote','Footer operational note','textarea',250],
+  ['footerExploreTitle','Footer Explore heading','text',50],['footerConnectTitle','Footer Connect heading','text',50],
+  ['footerHomeLabel','Footer Home link','text',60],['footerSubmitLabel','Footer Submit link','text',60],
+  ['footerHowLabel','Footer How it works link','text',60],['footerChannelLabel','Footer Channel link','text',70],
+  ['footerSupportLabel','Footer Support link','text',70],['footerStudioLabel','Footer Studio link','text',70]
  ]},
  {id:'appearance',label:'Theme & motion',description:'Editable dark and light palettes, default mode, font, corners and animation.',fields:[
   ['accentColor','Accent color','color',0],
   ['backgroundColor','Dark background','color',0],
   ['surfaceColor','Dark cards','color',0],
+  ['darkTextColor','Dark text color','color',0],
   ['lightBackgroundColor','Light background','color',0],
   ['lightSurfaceColor','Light cards','color',0],
   ['lightTextColor','Light text color','color',0],

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 :root{
  color-scheme:dark;--dark-bg:#090f0e;--dark-surface:#121b19;--light-bg:#f2f6f2;--light-surface:#fff;--light-text:#12231b;
- --accent:#a8ffbf;--bg:var(--dark-bg);--surface:var(--dark-surface);--text:#f5fff7;--muted:#a8bdb0;
+ --accent:#a8ffbf;--dark-text:#f5fff7;--bg:var(--dark-bg);--surface:var(--dark-surface);--text:var(--dark-text);--muted:#a8bdb0;
  --border:rgba(178,250,204,.15);--soft-border:rgba(178,250,204,.08);--soft-surface:rgba(255,255,255,.035);
  --contrast:#0d2114;--shadow:0 24px 85px rgba(0,0,0,.27);--font-display:'Manrope',sans-serif;--font-body:'DM Sans',sans-serif;
  --radius:24px;--radius-sm:14px;--max:1280px;--speed:.3s;
