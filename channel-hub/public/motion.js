@@ -7,6 +7,11 @@ const start=()=>{
  const gsap=window.gsap;
  if(!gsap)return;
  const enhanced=root.dataset.motion!=='balanced';
+ const adminHero=document.querySelector('.admin-hero');
+ if(adminHero){
+   const items=Array.from(adminHero.querySelectorAll('.eyebrow,h1,.lead,.admin-hero-symbol'));
+   gsap.from(items,{autoAlpha:0,y:enhanced?19:10,duration:enhanced?.62:.42,stagger:.08,ease:'power2.out',clearProps:'all'});
+ }
  const hero=document.querySelector('.axhk-hero');
  if(hero){
   const targets=['.eyebrow','.hero-badge','h1','.lead','.axhk-hero-ctas','.pills'].map(s=>hero.querySelector(s)).filter(Boolean);
