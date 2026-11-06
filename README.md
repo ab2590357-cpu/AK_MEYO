@@ -674,6 +674,29 @@ Clean old backups/download temp files and check Railway volume usage. Keep persi
 
 ### Media download fails
 
+On Android Termux, media download tools are optional; the bot, pairing and
+Channel worker do **not** depend on them. To enable public-media downloads,
+install the native Termux tools once (do not install the Linux standalone
+binary that works on Railway):
+
+```bash
+pkg install python python-pip ffmpeg
+python -m pip install -U yt-dlp
+yt-dlp --version
+```
+
+The bot now finds the executable on the Termux `PATH`, or you can set
+`AXHK_YT_DLP_PATH` to an absolute executable path. Nothing is auto-installed.
+See the upstream Android instructions: https://github.com/yt-dlp/yt-dlp/wiki/Installation.
+
+On Termux, the automatic WhatsApp-connected notification is text-only. This
+avoids an optional image upload failing during a healthy login; requested
+`.menu` image replies still use their existing text fallback.
+
+If WhatsApp has revoked a paired device (`401 loggedOut`), first inspect
+the Linked Devices list on the phone and preserve the local session folder
+before attempting another pairing. Do not use Unlink & Reset casually.
+
 This bot downloads public media only. Private, login-required, DRM, region-blocked, or anti-bot-protected URLs may fail. The bypass system is intentionally not included.
 
 ### Dashboard not opening
