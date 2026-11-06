@@ -137,8 +137,7 @@ function imageField(key,title,max){
 async function compress(file,limit,maxW,maxH){
  const objectUrl=URL.createObjectURL(file),image=new Image();
  try{
-  image.src=objectUrl;
-  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error('Invalid or unsupported image file'));});
+  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error('Invalid or unsupported image file'));image.src=objectUrl;});
   const factor=Math.min(1,maxW/image.naturalWidth,maxH/image.naturalHeight);
   if(!Number.isFinite(factor)||factor<=0)throw Error('Invalid image size');
   for(const scale of [1,.85,.7,.55]){
