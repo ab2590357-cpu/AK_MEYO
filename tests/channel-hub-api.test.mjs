@@ -98,7 +98,8 @@ test('premium theme settings reject unsafe values before Supabase write',async()
     const headers={authorization:'Bearer '+'d'.repeat(64)};
     for(const branding of [{defaultTheme:'javascript:alert(1)'},{motionLevel:'infinite'},
       {fontFamily:'@import evil'},{radiusStyle:'50vw'},{allowThemeToggle:'false'},
-      {heroImageData:'data:image/svg+xml;base64,PHN2Zz4='},{lightTextColor:'var(--hack)'}]){
+      {heroImageData:'data:image/svg+xml;base64,PHN2Zz4='},{lightTextColor:'var(--hack)'},
+      {logoData:'data:image/webp;base64,'+'A'.repeat(225000),heroImageData:'data:image/webp;base64,'+'A'.repeat(240000)}]){
       const result=await run({mode:'admin',method:'POST',headers,body:{action:'saveBrand',branding}});
       assert.equal(result.status,400,JSON.stringify(branding));
     }

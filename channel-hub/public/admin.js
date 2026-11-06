@@ -7,7 +7,7 @@ const brandForm=$('brandEditor');
 const groups=[
  {id:'identity',label:'Identity & logo',description:'Official name, owner identity, logo and support details.',fields:[
   ['brandName','Brand name','text',45],['brandTagline','Brand tagline','text',50],
-  ['logoData','Official logo image','image',240000],
+  ['logoData','Official logo image','image',160000],
   ['contactNumber','WhatsApp contact number with country code','tel',16],
   ['contactLabel','Floating WhatsApp label','text',65],
   ['channelUrl','Official WhatsApp Channel URL','url',220]
@@ -23,7 +23,7 @@ const groups=[
   ['visualCardTitle','Hero visual card heading','text',65],['visualCardText','Hero visual card description','text',65],
   ['heroPrimaryLabel','Hero primary button','text',65],
   ['heroSecondaryLabel','Hero secondary button','text',65],
-  ['heroImageData','Hero feature image','image',480000],
+  ['heroImageData','Hero feature image','image',240000],
   ['trustOne','First trust item','text',95],['trustTwo','Second trust item','text',95],['trustThree','Third trust item','text',95]
  ]},
  {id:'submission',label:'Submission form',description:'Form heading, helper content and primary submission button.',fields:[

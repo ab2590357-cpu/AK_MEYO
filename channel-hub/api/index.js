@@ -170,7 +170,7 @@ function validBrand(body) {
     if(parsed.kind!=='channel') throw new Error('Enter a valid WhatsApp Channel link');
     clean.channelUrl=parsed.link;
   }
-  for(const [field,max] of Object.entries({logoData:240000,heroImageData:480000})){
+  for(const [field,max] of Object.entries({logoData:240000,heroImageData:270000})){
     if(body[field]===undefined)continue;
     const image=body[field];
     if(typeof image!=='string'||image.length>max||
@@ -178,6 +178,10 @@ function validBrand(body) {
       throw new Error(field+' must be a compressed JPG/PNG/WebP data image within the limit');
     clean[field]=image;
   }
+  // The existing Supabase brand RPC has a 480KB absolute limit. Keep a safety
+  // margin for UTF-8 text, escaping and database serialization.
+  if(Buffer.byteLength(JSON.stringify(clean),'utf8')>450000)
+    throw new Error('Brand settings exceed the storage limit. Compress the logo or hero image.');
   return clean;
 }
 async function readBrand(){
