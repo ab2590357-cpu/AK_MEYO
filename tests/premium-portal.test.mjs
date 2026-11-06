@@ -41,7 +41,7 @@ test('day-night toggle, reduced motion and scoped studio controls are included',
   assert.match(brandJs,/darkTextColor/);
   assert.match(admin,/id="brandEditor"/);
   assert.match(admin,/id="brandLivePreview"/);
-  assert.match(adminJs,/data:image\/(?:webp|png|jpeg)/); // Logo image upload stays compressed.
+  assert.match(adminJs,/toDataURL/); // Uploaded images are compressed client-side.
   assert.doesNotMatch(adminJs,/localStorage\.setItem\([^)]*token/i);
 });
 
