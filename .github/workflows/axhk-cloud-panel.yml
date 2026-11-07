@@ -2,7 +2,7 @@ name: A-X-HK Cloud Bot Panel QA
 on:
   push:
     branches: ["feature/vercel-bot-panel"]
-    paths: ["bot-panel/**",".github/workflows/axhk-cloud-panel.yml"]
+    paths: ["bot-panel/**","bot-public/**",".github/workflows/axhk-cloud-panel.yml"]
   pull_request:
     paths: ["bot-panel/**",".github/workflows/axhk-cloud-panel.yml"]
 permissions:
@@ -27,4 +27,7 @@ jobs:
           node --check api/index.js
           node --check termux-agent.mjs
           node --check public/assets/cloud.js
+          node --check public/assets/public-control.js
+          node --check ../bot-public/api/index.js
+          node --check ../bot-public/public/assets/site.js
           npm test
