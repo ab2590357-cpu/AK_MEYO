@@ -7,6 +7,7 @@ import { db } from '../../lib/core/database.js';
 import { formatUptime, sleep } from '../../lib/utils/text.js';
 import { serifBold, premiumLabel, premiumTitle } from '../../lib/utils/brand-style.js';
 import { readMenuCard } from '../../lib/services/menu-card.js';
+import { publishChannelMenu, channelMenuPostStatus, disableChannelMenuForward, buildChannelMenuAnnouncement, CHANNEL_URL } from '../../lib/services/channel-menu.js';
 import { waManager } from '../../lib/services/whatsapp.js';
 import { OWNER_PROFILE } from '../../lib/core/owner-profile.js';
 import { sendOwnerCard } from '../../lib/services/premium-experience.js';
@@ -57,7 +58,8 @@ function quickStartRows(prefix) {
     `┃ 🎬 *${prefix}video <song>*`,
     `┃ 🟢 *${prefix}alive*`,
     `┃ ⚡ *${prefix}ping*`,
-    `┃ 👑 *${prefix}owner*`
+    `┃ 👑 *${prefix}owner*`,
+    `┃ 📣 *${prefix}channel*   •   *${prefix}submitlink*`
   ];
 }
 
@@ -77,15 +79,16 @@ function rowBox(title, rows, icon = '✨') {
   ];
 }
 
-const DEFAULT_PUBLIC_BASE_URL = 'https://zesty-solace-production-29fe.up.railway.app';
+const CHANNEL_LINK_HUB_URL = 'https://axhk-channel-link-hub.vercel.app/';
 const DEFAULT_CREATOR_STUDIO_URL = 'https://abdullah-x-hk-studio.vercel.app/';
 
 function publicBaseUrl() {
-  return String(config.publicUrl || DEFAULT_PUBLIC_BASE_URL).replace(/\/+$/, '');
+  return String(config.publicUrl || '').replace(/\/+$/, '');
 }
 
 function userLinkPortalUrl() {
-  return `${publicBaseUrl()}/link`;
+  const url = publicBaseUrl();
+  return url ? `${url}/link` : '';
 }
 
 function formatDirectPairCode(value = '') {
@@ -126,6 +129,7 @@ function premiumHomeMenu(ctx) {
     `┃ ${p}ping   •   ${p}alive   •   ${p}owner`,
     `┃ ${p}menu all   •   ${p}categories`,
     `┃ ${p}searchcmd <word>   •   ${p}links`,
+    `┃ ${p}channel   •   ${p}submitlink`,
     `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
     '',
     `╭━━〔 ✦ ${serifBold('A_X_HK OS')} 〕━━╮`,
@@ -252,12 +256,19 @@ function categoryMenu(prefix, requested, mode = config.mode, theme = 'royal', me
 }
 
 async function sendMenuCard(ctx, caption) {
+  // Send one normal premium image/menu response, without Channel forwarding
+  // or an unsolicited Channel link appended to every command.
   try {
     const { buffer: image } = await readMenuCard();
-    return await ctx.send({ image, caption }, { quoted: ctx.msg });
+    return await ctx.send({ image, caption: String(caption) }, { quoted: ctx.msg });
   } catch {
-    return ctx.reply(caption);
+    return ctx.reply(String(caption));
   }
+}
+async function sendChannelLinkedCard(ctx, caption) {
+  // Legacy wrapper for live .ping: the user opted out of the extra Channel
+  // forward and URL footer, so return only this command's live answer.
+  return ctx.reply(String(caption));
 }
 
 async function sendBrandCard(ctx, caption) {
@@ -338,7 +349,7 @@ function fullMenuMessages(prefix, maxLen = 3800) {
 async function sendFullMenuChat(ctx) {
   const chunks = fullMenuMessages(ctx.prefix);
   for (let i = 0; i < chunks.length; i += 1) {
-    if (i === 0) await ctx.reply(chunks[i]);
+    if (i === 0) await sendMenuCard(ctx, chunks[i]);
     else await ctx.send({ text: chunks[i] });
     if (i + 1 < chunks.length) await sleep(450);
   }
@@ -356,6 +367,49 @@ registerCommand({
     const text = categoryMenu(ctx.prefix, requested, ctx.sessionSettings.mode || config.mode, ctx.sessionSettings.menuTheme || 'royal', ctx.sessionSettings);
     if (!text) return;
     await sendMenuCard(ctx, text);
+  }
+});
+
+registerCommand({
+  name: 'channelmenu',
+  category: 'owner',
+  description: 'Preview or publish authentic A-X-HK Channel menu image and forwarding',
+  usage: 'channelmenu status|preview|publish|disable',
+  ownerOnly: true,
+  masterOnly: true,
+  cooldown: 10,
+  async run(ctx) {
+    if (ctx.sessionId !== 'main') return ctx.reply('Only the main owner session can manage the official Channel.');
+    const mode = String(ctx.args[0] || 'status').toLowerCase();
+    if (mode === 'status') {
+      const stored = await channelMenuPostStatus();
+      return ctx.reply(stored
+        ? (stored.isBranded
+           ? '✅ Branded Channel menu post saved. .menu will forward its original image, caption and native View Channel link.\n📣 ' + CHANNEL_URL
+           : '⚠️ An older Channel post is saved, but does not contain the premium menu image/caption. Use ' + ctx.prefix + 'channelmenu publish after the one-hour repost limit to upgrade.')
+        : 'ℹ️ No published Channel menu saved yet. .menu currently sends the brand image and link normally.\nTo publish once as admin: ' + ctx.prefix + 'channelmenu publish');
+    }
+    if(mode==='preview'){
+      const caption=buildChannelMenuAnnouncement({
+        prefix:ctx.prefix,
+        categories:Object.keys(commandsByCategory())
+      });
+      const {buffer:image}=await readMenuCard();
+      await ctx.send({image,caption},{quoted:ctx.msg});
+      return;
+    }
+    if (mode === 'disable') {
+      await disableChannelMenuForward();
+      return ctx.reply('✅ Genuine Channel forwarding disabled; standard image menu restored. No Channel posts were deleted.');
+    }
+    if (mode !== 'publish') return ctx.reply('Usage: ' + ctx.prefix + 'channelmenu status|preview|publish|disable');
+    const posted = await publishChannelMenu(ctx, {
+      caption:buildChannelMenuAnnouncement({
+        prefix:ctx.prefix,
+        categories:Object.keys(commandsByCategory())
+      })
+    });
+    return ctx.reply('✅ Menu image published to your actual WhatsApp Channel, and original post saved for authentic forwarding.\n📣 ' + CHANNEL_URL + '\n\nNow use ' + ctx.prefix + 'menu to test its appearance. Native View Channel presentation depends on WhatsApp.');
   }
 });
 
@@ -401,11 +455,13 @@ function statusClock() {
 }
 
 async function sendAliveCard(ctx, caption) {
+  // Keep the configured premium menu image with current status text.
+  // Do not append the Channel URL or forward a Channel update.
   try {
     const { buffer: image } = await readMenuCard();
-    return await ctx.send({ image, caption }, { quoted: ctx.msg });
+    return await ctx.send({ image, caption: String(caption) }, { quoted: ctx.msg });
   } catch {
-    return ctx.reply(caption);
+    return ctx.reply(String(caption));
   }
 }
 
@@ -450,7 +506,7 @@ registerCommand({
     try { await ctx.send({ react: { text: '⚡', key: ctx.msg.key } }); } catch {}
     const ms = Math.max(1, Math.round(performance.now() - start));
     const mem = process.memoryUsage();
-    await ctx.reply([
+    await sendChannelLinkedCard(ctx, [
       premiumTitle(`${config.shortName} PONG`, '⚡', '✨'), '',
       premiumLabel('SEND LATENCY', `${ms} ms`, '🚀'), '',
       premiumLabel('UPTIME', formatUptime(process.uptime()), '⏱️'), '',
@@ -567,11 +623,83 @@ registerCommand({
 registerCommand({ name: 'minisite', category: 'system', description: 'Show configured mini-site URL', async run(ctx) { await ctx.reply([...rowBox('MINI SITE', [`┃ 🔗 ${config.miniSiteUrl || 'Not configured yet'}`], '🌐'), '', ...premiumFooterBlock()].join('\n')); } });
 
 registerCommand({
+  name: 'linkhubstatus',
+  aliases: ['channelhubstatus','sharestatus'],
+  category: 'owner',
+  ownerOnly: true,
+  masterOnly: true,
+  description: 'Check private bot worker and public Channel Link Hub readiness',
+  cooldown: 10,
+  async run(ctx) {
+    if (ctx.sessionId !== 'main') return ctx.reply('This check is available only to the owner main session.');
+    let service = {ready:false,workerReady:false,databaseConnected:false};
+    try {
+      const response = await fetch(CHANNEL_LINK_HUB_URL+'api/index?mode=health',{signal:AbortSignal.timeout(12000)});
+      if (response.ok) service = await response.json();
+    } catch {}
+    return ctx.reply([
+      '📡 *A-X-HK CHANNEL LINK HUB STATUS*',
+      '',
+      '📣 Channel: '+config.whatsappChannelUrl,
+      '🤖 Phone worker configured: '+(process.env.CHANNEL_HUB_ENABLED==='true'&&process.env.CHANNEL_HUB_WORKER_TOKEN?'YES':'NO'),
+      '🟢 Public submissions open: '+(service.ready?'YES':'NO'),
+      '🔐 Channel verified online: '+(service.workerReady?'YES':'NO'),
+      '🗃️ Cloud database: '+(service.databaseConnected?'CONNECTED':'OFFLINE'),
+      '',
+      'Website: '+CHANNEL_LINK_HUB_URL,
+      'Use *'+ctx.prefix+'channelmenu status* for the original forwarded Channel menu.'
+    ].join('\n'));
+  }
+});
+
+registerCommand({
+  name: 'channel', aliases: ['mychannel', 'joinchannel', 'channelink'], category: 'system',
+  description: 'Show A-X-HK official WhatsApp Channel and how to follow it',
+  cooldown: 5,
+  async run(ctx) {
+    const content = [
+      '📣 *A-X-HK OFFICIAL WHATSAPP CHANNEL*',
+      '',
+      config.whatsappChannelUrl,
+      '',
+      'Tap the link and select *Follow* to see Channel posts.',
+      '🔗 Want to share your WhatsApp Group/Channel? Submit it at:',
+      CHANNEL_LINK_HUB_URL,
+      '',
+      '📚 Type *' + ctx.prefix + 'menu* for the bot commands.'
+    ].join('\n');
+    // Only the explicit .channel command shares the Channel link. Never
+    // forward a previously published Channel post automatically.
+    return ctx.send({ text: config.whatsappChannelUrl + '\n\n' + content.replace(config.whatsappChannelUrl, '').trim() }, { quoted: ctx.msg });
+  }
+});
+
+registerCommand({
+  name: 'submitlink', aliases: ['sharelink', 'submitgroup', 'submitchannel', 'linkhub'],
+  category: 'system', description: 'Share a group/channel invite through the public A-X-HK Link Hub',
+  cooldown: 5,
+  async run(ctx) {
+    await ctx.reply([
+      '🔗 *A-X-HK COMMUNITY LINK SUBMISSIONS*',
+      '',
+      CHANNEL_LINK_HUB_URL,
+      '',
+      '✅ WhatsApp Group and Channel invitations',
+      '⏱️ One public submission every 12 hours (owner Admin Portal has no cooldown)',
+      '📣 Valid links post to the official Channel when the authorized bot is online.',
+      '',
+      'Official Channel: ' + config.whatsappChannelUrl
+    ].join('\n'));
+  }
+});
+
+registerCommand({
   name: 'links', category: 'system', description: 'Show configured bot links',
   async run(ctx) {
     const base = publicBaseUrl();
     const links = [
-      base && `┃ 🔗 Link WhatsApp: ${base}/link`,
+      base && `┃ 🔗 Multi-session Bot Portal: ${base}/link`,
+      `┃ 🚀 Submit Group/Channel: ${CHANNEL_LINK_HUB_URL}`,
       config.miniSiteUrl && `┃ 🌐 Mini Bot: ${config.miniSiteUrl}`,
       `┃ 💎 Creator Studio: ${creatorStudioUrl()}`,
       config.githubUrl && `┃ 🧩 GitHub: ${config.githubUrl}`,
@@ -598,7 +726,8 @@ registerCommand({
       `Version: ${config.version}`,
       `Commands: ${allCommands().length}`,
       config.miniSiteUrl && `Mini Bot: ${config.miniSiteUrl}`,
-      `Link Portal: ${userLinkPortalUrl()}`,
+      `Submit Group/Channel: ${CHANNEL_LINK_HUB_URL}`,
+      userLinkPortalUrl() && `Multi-session Bot Portal: ${userLinkPortalUrl()}`,
       `Creator Studio: ${creatorStudioUrl()}`,
       config.githubUrl && `GitHub: ${config.githubUrl}`,
       config.whatsappChannelUrl && `Updates: ${config.whatsappChannelUrl}`,
@@ -619,6 +748,7 @@ registerCommand({
   name: 'multilink', aliases: ['linkbot', 'multibot'], category: 'system', description: 'Show the public A-X-HK multi-link portal',
   async run(ctx) {
     const url = userLinkPortalUrl();
+    if (!url) return ctx.reply('🔒 *A-X-HK MULTI-SESSION LINKING* is currently local/private. The retired Railway URL is no longer active.\n\nFor WhatsApp Group/Channel submissions use: ' + CHANNEL_LINK_HUB_URL);
     await ctx.reply(`🔗 *A-X-HK USER LINK*\n${url}\n\nThis page only links the visitor's own WhatsApp. Owner/admin controls are protected separately.`);
   }
 });

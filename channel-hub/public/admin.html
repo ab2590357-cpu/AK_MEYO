@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#090f0e">
+<title>A-X-HK • Premium Owner Studio</title><link rel="icon" href="/axhk-logo.webp" type="image/webp">
+<link rel="stylesheet" href="/style.css"><script>try{const t=localStorage.getItem('axhk-theme-choice');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch{}</script>
+</head>
+<body class="admin-page">
+<div class="ambient ambient-one" aria-hidden="true"></div><div class="ambient ambient-two" aria-hidden="true"></div>
+<div class="site-shell admin-shell">
+ <header class="topbar">
+  <a class="brand" href="/" aria-label="A-X-HK public page"><span class="brand-mark brand-image"><img id="siteLogo" src="/axhk-logo.webp" width="52" height="52" alt="A-X-HK logo"></span><span class="brand-name-stack"><strong id="brandName">A-X-HK</strong><small>OWNER / BRAND STUDIO</small></span></a>
+  <nav class="axhk-nav admin-nav" id="mainNav" aria-label="Owner navigation"><a href="#dashboard">Dashboard</a><a href="#publisher">Publisher</a><a href="#studio">Brand Studio</a><a href="/" target="_blank" rel="noopener noreferrer">Visit Website ↗</a></nav>
+  <div class="nav-actions"><button id="mobileMenuToggle" class="icon-button mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="Open menu"><span aria-hidden="true">☰</span></button><button id="themeToggle" class="icon-button" type="button" aria-label="Switch color theme"><span class="theme-icon" aria-hidden="true">☀</span></button></div>
+ </header>
+ <main>
+  <section class="admin-hero" id="dashboard"><div><div class="eyebrow"><span class="signal-small"></span>OWNER CONTROL CENTER / A-X-HK</div><h1>Your network.<br><em>Your vision.</em></h1><p class="lead">Manage the official Channel queue, publish owner invitations and craft every visual detail of your public website. Your changes remain saved in Supabase.</p></div><div class="admin-hero-symbol" aria-hidden="true"><img src="/axhk-logo.webp" width="164" height="164" alt=""></div></section>
+  <section class="admin-card auth-card" aria-labelledby="authTitle">
+    <div class="admin-card-heading"><div><div class="section-number">SECURE ACCESS / 01</div><h2 id="authTitle">Connect to Owner Studio</h2><p>Use the existing private ADMIN_TOKEN. It stays in this browser tab only and is never placed in a URL or saved in storage.</p></div><span class="status-pill" id="authState">Not connected</span></div>
+    <div class="auth-row"><div class="field-block"><label for="token">OWNER ACCESS TOKEN</label><div class="input-shell"><input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your private ADMIN_TOKEN" aria-describedby="tokenHint"></div><small id="tokenHint">Do not share screenshots showing the token.</small></div><button class="button-primary" id="load" type="button">Unlock dashboard <span aria-hidden="true">↗</span></button></div><p id="note" class="message" role="status" aria-live="polite"></p>
+  </section>
+  <section class="metrics-grid" aria-label="Visible submission counts">
+    <div class="metric-card"><span>VISIBLE SUBMISSIONS</span><strong id="countAll">—</strong><small>Most recent queue records</small></div>
+    <div class="metric-card"><span>POSTED ON CHANNEL</span><strong id="countPosted">—</strong><small>Confirmed published receipts</small></div>
+    <div class="metric-card"><span>ACTIVE IN QUEUE</span><strong id="countPending">—</strong><small>Pending or processing</small></div>
+    <div class="metric-card"><span>OWNER REVIEW</span><strong id="countReview">—</strong><small>Failed or needs attention</small></div>
+  </section>
+  <div class="admin-two-col" id="publisher">
+   <section class="admin-card publisher-card"><div class="section-number">OWNER PUBLISHER / 02</div><h2>Publish without limits.</h2><p>Owner submissions bypass the public 12-hour cooldown, but they still require a connected, verified bot.</p>
+    <form id="ownerSubmit"><label for="ownerLink" class="field-label">GROUP OR CHANNEL INVITATION</label><div class="input-shell"><input id="ownerLink" type="url" placeholder="https://chat.whatsapp.com/..." required maxlength="250"></div><button id="ownerButton" class="button-primary" type="submit">Send to Channel queue <span aria-hidden="true">↗</span></button><p id="ownerStatus" class="message" role="status"></p></form>
+   </section>
+   <section class="admin-card runtime-card"><div class="section-number">NETWORK HEALTH / LIVE</div><h2>Connected ecosystem.</h2><p>Public posting is enabled only while your Termux worker is verified and online.</p>
+    <div class="health-line"><span>Website API</span><strong id="apiHealth">Checking…</strong></div><div class="health-line"><span>Verified worker</span><strong id="workerHealth">Checking…</strong></div><div class="health-line"><span>Public submissions</span><strong id="submissionHealth">Checking…</strong></div>
+    <a href="/" class="button-secondary" target="_blank" rel="noopener noreferrer">Preview user experience ↗</a>
+   </section>
+  </div>
+  <section class="admin-card queue-card" aria-labelledby="queueTitle"><div class="admin-card-heading"><div><div class="section-number">CHANNEL QUEUE / 03</div><h2 id="queueTitle">Submission monitor</h2><p>Review status and confirm Channel posts before retrying ambiguous sends.</p></div><div class="queue-controls"><label for="filterStatus">Filter</label><select id="filterStatus" class="input-select"><option value="all">All statuses</option><option value="posted">Posted</option><option value="pending">Pending</option><option value="processing">Processing</option><option value="failed">Failed</option><option value="needs_review">Needs review</option><option value="rejected">Rejected</option></select><button class="button-secondary" id="refreshQueue" type="button">Refresh ↻</button></div></div>
+    <div class="queue-scroll"><table class="queue-table"><thead><tr><th>Date</th><th>Invitation</th><th>Status</th><th>Actions</th></tr></thead><tbody id="rows"><tr><td colspan="4">Unlock the Owner Studio to view submissions.</td></tr></tbody></table></div>
+  </section>
+  <section class="admin-studio" id="studio" aria-labelledby="studioTitle"><div class="admin-studio-intro"><div><div class="section-number">BRANDING STUDIO / 04</div><h2 id="studioTitle">Design your entire <em>experience.</em></h2><p>Edit the header, hero, form, confirmations, founder section, footer, colors, typography, themes and motion—without changing code.</p></div><div class="brand-editor-actions"><button id="brandLoad" type="button" class="button-secondary">Load current settings</button><a class="button-secondary" href="/" target="_blank" rel="noopener noreferrer">Open live website ↗</a></div></div>
+   <div class="studio-grid">
+    <div class="studio-panel"><div class="studio-panel-heading"><span>EDIT / YOUR WEBSITE</span><span class="mini-dot"></span></div><div id="editorTabs" class="studio-tabs" role="tablist" aria-label="Brand editor sections"></div><form id="brandEditor"><div id="brandFields"></div><div class="studio-save-bar"><div><strong>Persistent branding</strong><small>Changes take effect only after saving.</small></div><button id="brandSave" class="button-primary" type="submit" disabled>Save website design <span aria-hidden="true">↗</span></button></div><p class="message" id="brandStatus" role="status" aria-live="polite">Unlock your owner token to load your settings.</p></form></div>
+    <aside class="preview-side"><div class="preview-sticky"><div class="preview-title-row"><span>LIVE DESIGN PREVIEW</span><span>DESKTOP / MOBILE READY</span></div>
+      <div class="mini-preview" id="brandLivePreview"><div class="mini-preview-header"><img id="previewLogo" src="/axhk-logo.webp" alt="Brand logo preview" width="45" height="45"><div><strong id="previewName">A-X-HK</strong><small id="previewTagline">OFFICIAL NETWORK</small></div><span class="mini-preview-menu" aria-hidden="true">☰</span></div>
+       <div class="mini-preview-content"><div class="mini-preview-badge">✦ COMMUNITY NETWORK</div><h3><span id="previewHeading">Share your community.</span><em id="previewHighlight">Grow together.</em></h3><p id="previewDescription">Your WhatsApp community deserves to be discovered.</p><span class="mini-preview-cta" id="previewCTA">Submit your link ↗</span></div>
+       <div class="mini-preview-footer"><span>✦ CONNECTED TO COMMUNITY</span><span>◉</span></div>
+      </div><div class="preview-help"><span>◈</span><p>Your preview updates while you edit. Save to apply settings to the public website. Image uploads remain local until you save.</p></div>
+    </div></aside>
+   </div>
+  </section>
+ </main>
+ <footer class="site-footer admin-footer"><div class="footer-bottom"><span>© 2026 A-X-HK • Owner Studio</span><span>Private credentials stay in your own browser tab.</span><a href="/" target="_blank" rel="noopener noreferrer">Public website ↗</a></div></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script><script src="/contact.js" defer></script><script src="/brand.js" defer></script><script src="/admin.js" defer></script><script src="/motion.js" defer></script>
+</body></html>

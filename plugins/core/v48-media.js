@@ -1,5 +1,6 @@
 import { downloadMediaMessage } from '@whiskeysockets/baileys';
-import { Sticker, StickerTypes } from 'wa-sticker-formatter';
+import { loadStickerFormatter } from '../../lib/utils/termux-native.js';
+const { Sticker, StickerTypes } = await loadStickerFormatter();
 import { registerCommand } from '../../lib/core/registry.js';
 import { db } from '../../lib/core/database.js';
 import { config } from '../../lib/config.js';
@@ -48,7 +49,23 @@ registerCommand({ name: 'stickername', aliases: ['packname'], category: 'media',
 registerCommand({
   name: 'take', aliases: ['resticker'], category: 'media', description: 'Rebuild quoted sticker/image with your A-X-HK sticker metadata', usage: 'take [Pack | Author]', cooldown: 5,
   async run(ctx) {
-    const { buffer } = await mediaBuffer(ctx, ['image','video','sticker']);
+    let media;
+    try {
+      media = await mediaBuffer(ctx, ['image','video','sticker']);
+    } catch (err) {
+      // A quoted text/menu message is not sticker media. Explain the correct
+      // usage instead of raising a noisy "Command failed silently" stack.
+      if (String(err?.message || '').startsWith('Reply/send supported media:')) {
+        return ctx.reply(
+          '🖼️ *A-X-HK STICKER MAKER*\n\n' +
+          'Reply to an actual *photo, video or sticker* and type *' + ctx.prefix + 'take*.\n' +
+          'For custom metadata: *' + ctx.prefix + 'take Pack Name | Author*.\n\n' +
+          'Text messages and the ' + ctx.prefix + 'menu command are not media.'
+        );
+      }
+      throw err;
+    }
+    const { buffer } = media;
     if (buffer.length > 20 * 1024 * 1024) throw new Error('Media is larger than 20 MB.');
     const saved = ctx.sessionSettings.stickerPack || {};
     const [packArg, authorArg] = ctx.argText.split('|').map((x) => x.trim());

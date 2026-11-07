@@ -1,0 +1,83 @@
+name: Channel Link Hub QA
+on:
+  push:
+    branches:
+      - feature/channel-link-hub
+  pull_request:
+    paths:
+      - "channel-hub/**"
+      - "lib/services/channel-hub-worker.js"
+      - "lib/index.js"
+      - "lib/core/dispatcher.js"
+      - "lib/core/database.js"
+      - "lib/services/important-alerts.js"
+      - "plugins/core/important-alerts.js"
+      - "tests/important-alert-removal.test.mjs"
+      - "scripts/command-audit.mjs"
+      - "lib/services/whatsapp.js"
+      - "main.js"
+      - "lib/core/signal-log-redaction.js"
+      - "tests/signal-log-redaction.test.mjs"
+      - "lib/services/media-downloader.js"
+      - "lib/utils/termux-native.js"
+      - "tests/termux-runtime.test.mjs"
+      - "tests/channel-hub-*.mjs"
+      - ".github/workflows/channel-link-hub-qa.yml"
+permissions:
+  contents: read
+jobs:
+  channel-hub-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install existing bot packages
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Syntax check
+        run: |
+          node --check channel-hub/api/index.js
+          node --check channel-hub/public/app.js
+          node --check channel-hub/public/admin.js
+          node --check channel-hub/public/motion.js
+          node --check channel-hub/public/contact.js
+          node --check channel-hub/public/brand.js
+          node --check channel-hub/public/brand.js
+          node --check channel-hub/public/contact.js
+          node --check lib/services/channel-hub-worker.js
+          node --check lib/index.js
+          node --check lib/core/dispatcher.js
+          node --check lib/core/database.js
+          node --check tests/important-alert-removal.test.mjs
+          node --check scripts/command-audit.mjs
+          node --check lib/services/whatsapp.js
+          node --check main.js
+          node --check lib/core/signal-log-redaction.js
+          node --check tests/signal-log-redaction.test.mjs
+          node --check lib/services/media-downloader.js
+          node --check tests/termux-runtime.test.mjs
+          node --check lib/services/link-logo.js
+          node --check lib/services/menu-card.js
+          node --check lib/utils/image-assets.js
+          node --check lib/public/assets/app.js
+          node --check plugins/core/system.js
+          node --check plugins/core/v48-media.js
+      - name: Run Channel Hub regression tests
+        run: AXHK_TERMUX_MODE=1 node --test tests/channel-hub-api.test.mjs tests/channel-hub-worker.test.mjs tests/channel-menu.test.mjs tests/dashboard-image-upload.test.mjs tests/termux-runtime.test.mjs tests/premium-portal.test.mjs tests/signal-log-redaction.test.mjs tests/important-alert-removal.test.mjs
+
+      - name: Audit registry without sending WhatsApp messages
+        run: AXHK_TERMUX_MODE=1 node scripts/command-audit.mjs
+      - name: Upload command inventory
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: axhk-command-inventory
+          path: artifacts/command-inventory.json
+          if-no-files-found: ignore
