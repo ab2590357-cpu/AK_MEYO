@@ -120,7 +120,7 @@ export default async function handler(req,res){
     const token=String(req.body?.token||'');
     const input=req.body?.data||{};
     if(!publicPathAllowed(path,method))return reply(res,403,{error:'Unsupported public pairing action'});
-    if((path==='/api/multi/create'||/\/pair$/.test(path))&&!policy.enabled)
+    if((path==='/api/multi/create'||/\/(?:pair|qr)$/.test(path))&&!policy.enabled)
      return reply(res,423,{error:policy.message||'Pairing is temporarily closed'});
     if(!input||typeof input!=='object'||Array.isArray(input))return reply(res,400,{error:'Invalid request'});
     if(JSON.stringify(input).length>8000||token.length>180)return reply(res,413,{error:'Request too large'});
