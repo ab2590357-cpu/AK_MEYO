@@ -103,7 +103,12 @@ async function heartbeat(){
  if(lastLocalUptime>=0&&localUptime>0&&localUptime<lastLocalUptime)lastPublicPolicy=null;
  lastLocalUptime=localUptime;
  currentStatus=String(snapshot.status||'local_offline');
- const b={botStatus:currentStatus,linkedName:String(snapshot.user?.name||''),version:String(snapshot.version||'')};
+ let localMultiEnabled=null;
+ try{
+  const brand=await fetch(local+'/api/brand',{signal:AbortSignal.timeout(5000)});
+  if(brand.ok){const d=await brand.json();localMultiEnabled=typeof d.multi?.enabled==='boolean'?d.multi.enabled:null}
+ }catch{}
+ const b={botStatus:currentStatus,linkedName:String(snapshot.user?.name||''),version:String(snapshot.version||''),multiEnabled:localMultiEnabled};
  const acknowledged=await cloud('heartbeat',{method:'POST',body:JSON.stringify(b)});
  lastBeat=Date.now();
  if(typeof acknowledged?.publicPairingEnabled==='boolean' &&
