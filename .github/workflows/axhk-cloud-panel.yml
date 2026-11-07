@@ -26,6 +26,7 @@ jobs:
         run: |
           node --check api/index.js
           node --check termux-agent.mjs
+          node --check public/assets/app.js
           node --check public/assets/cloud.js
           node --check public/assets/public-control.js
           node --check ../bot-public/api/index.js
