@@ -39,6 +39,11 @@ export default async function handler(req,res){
    if(u.status!==200)return json(res,503,{error:'Pairing service is temporarily unavailable'});
    return json(res,200,{enabled:!!u.data.enabled,online:!!u.data.online,message:String(u.data.message||'').slice(0,240),updatedAt:u.data.updatedAt||null});
   }
+  if(route==='brand'&&req.method==='GET'){
+   const u=await ownerFetch('relay',{method:'POST',body:{path:'/api/brand',method:'GET',token:'',data:{}}});
+   if(u.status!==200)return json(res,u.status,{error:u.data?.error||'Bot brand details unavailable'});
+   return json(res,200,{botName:u.data?.botName||'A-X-HK',version:u.data?.version||'',multi:{enabled:!!u.data?.multi?.enabled,maxSessions:Number(u.data?.multi?.maxSessions||0),accessCodeRequired:!!u.data?.multi?.accessCodeRequired}});
+  }
   if(route!=='proxy'||req.method!=='POST')return json(res,404,{error:'Not found'});
   const path=String(req.body?.path||''),method=String(req.body?.method||'GET').toUpperCase();
   const token=String(req.headers['x-session-token']||'');
