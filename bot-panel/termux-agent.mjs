@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 // A-X-HK private outbound Termux bridge. Never exposes localhost to the internet.
 import 'dotenv/config';
+import dns from 'node:dns';
 import {setTimeout as sleep} from 'node:timers/promises';
+
+// Android mobile networks can intermittently fail IPv6 connection attempts.
+dns.setDefaultResultOrder('ipv4first');
 
 const panel=String(process.env.AXHK_PANEL_URL||'https://axhk-bot-panel.vercel.app').replace(/\/$/,'');
 const key=String(process.env.AXHK_BRIDGE_SECRET||'');
@@ -17,20 +21,42 @@ if(!localToken&&!localPassword){
  console.error('Local owner login needed. Set AXHK_LOCAL_OWNER_PASSWORD in this Termux session, or use your existing DASHBOARD_TOKEN. Never paste credentials in a chat.');
  process.exit(1);
 }
-let cookie='',running=true,lastBeat=0,currentStatus='starting';
+let cookie='',running=true,lastBeat=0,currentStatus='starting',lastReportedStatus='';
 const workerHeaders=()=>({
  'x-axhk-bridge-key':key,
  'x-vercel-protection-bypass':bypass,
  'content-type':'application/json',
  'cache-control':'no-store'
 });
+// Only retry idempotent cloud reads and heartbeats. A result POST is retried
+// on the following poll using the already-completed job cache, never re-executed.
 async function cloud(route,options={}){
- const res=await fetch(panel+'/api/bridge/'+route,{...options,headers:{...workerHeaders(),...(options.headers||{})},cache:'no-store',signal:AbortSignal.timeout(17000)});
- const type=res.headers.get('content-type')||'';
- if(!type.includes('application/json'))throw Error('Vercel bridge returned a non-JSON response. Check Deployment Protection bypass configuration.');
- const obj=await res.json();
- if(!res.ok)throw Error('Cloud bridge request failed ('+res.status+'): '+String(obj.error||'unknown').slice(0,150));
- return obj;
+ const attempts=(route==='next'||route==='heartbeat')?3:1;
+ let lastError;
+ for(let attempt=1;attempt<=attempts;attempt++){
+  try{
+   const res=await fetch(panel+'/api/bridge/'+route,{
+    ...options,headers:{...workerHeaders(),...(options.headers||{})},
+    cache:'no-store',signal:AbortSignal.timeout(15000)
+   });
+   if([408,429,500,502,503,504].includes(res.status)){
+    const transient=new Error('Temporary Vercel HTTP '+res.status);
+    transient.transient=true;
+    throw transient;
+   }
+   const type=res.headers.get('content-type')||'';
+   if(!type.includes('application/json'))throw Error('Vercel bridge returned non-JSON. Check deployment protection bypass.');
+   const obj=await res.json();
+   if(!res.ok)throw Error('Cloud bridge request failed ('+res.status+'): '+String(obj.error||'unknown').slice(0,150));
+   return obj;
+  }catch(err){
+   lastError=err;
+   const isNetwork=err?.transient||/fetch failed|timeout|aborted|network|ECONN|EAI_AGAIN|ETIMEDOUT/i.test(String(err?.message||''));
+   if(!isNetwork||attempt===attempts)break;
+   await sleep(1500*attempt);
+  }
+ }
+ throw lastError;
 }
 async function authenticate(){
  if(localToken)return;
@@ -71,6 +97,10 @@ async function heartbeat(){
  const b={botStatus:currentStatus,linkedName:String(snapshot.user?.name||''),version:String(snapshot.version||'')};
  await cloud('heartbeat',{method:'POST',body:JSON.stringify(b)});
  lastBeat=Date.now();
+ if(lastReportedStatus!==currentStatus){
+  console.log('[A-X-HK relay] Heartbeat accepted; local bot: '+currentStatus);
+  lastReportedStatus=currentStatus;
+ }
 }
 const completed=new Map();
 process.on('SIGINT',()=>{running=false});
@@ -78,7 +108,11 @@ process.on('SIGTERM',()=>{running=false});
 console.log('[A-X-HK] Secure outbound Vercel relay starting. Owner auth stays on this phone.');
 while(running){
  try {
-  if(Date.now()-lastBeat>45000)await heartbeat();
+  if(Date.now()-lastBeat>45000){
+   try{await heartbeat()}catch(error){
+    console.error('[A-X-HK heartbeat]',String(error?.message||error).slice(0,140));
+   }
+  }
   const response=await cloud('next');
   const job=response.job;
   if(job){
@@ -96,7 +130,8 @@ while(running){
    await cloud('result',{method:'POST',body:JSON.stringify(result)});
   }
  }catch(err){
-  console.error('[A-X-HK relay]',String(err.message||err).slice(0,210));
+  const reason=err?.cause?.code?(' ('+String(err.cause.code).slice(0,40)+')'):'';
+  console.error('[A-X-HK relay]',(String(err?.message||err)+reason).slice(0,210));
   await sleep(10000);
  }
  await sleep(5000);
