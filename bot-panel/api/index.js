@@ -154,7 +154,8 @@ export default async function handler(req,res){
    if(p==='/api/bridge/heartbeat'&&req.method==='POST'){
     const b=req.body||{};
     await writeJSON('status/agent.json',{at:Date.now(),botStatus:limitText(b.botStatus,40),linkedName:limitText(b.linkedName,120),version:limitText(b.version,50),platform:'Termux'}, {allowOverwrite:true});
-    return reply(res,200,{ok:true});
+    const policy=await pairingPolicy();
+    return reply(res,200,{ok:true,publicPairingEnabled:policy.enabled});
    }
    if(p==='/api/bridge/result'&&req.method==='POST'){
     const b=req.body||{},id=String(b.id||'');
