@@ -74,6 +74,7 @@ async function requestLocal(job,allowRetry=true){
  if(!localToken&&!cookie)await authenticate();
  const body=job.method==='GET'?undefined:Buffer.from(String(job.bodyBase64||''),'base64');
  const headers={'accept':'application/json','x-axhk-cloud-relay':'1','content-type':job.contentType||'application/json'};
+ if(/^\/api\/multi\/ax_[a-f0-9]{14}\//.test(job.path)&&/^[a-zA-Z0-9_-]{32,180}$/.test(String(job.sessionToken||'')))headers['x-session-token']=job.sessionToken;
  if(localToken)headers['x-dashboard-token']=localToken;
  if(cookie)headers.cookie=cookie;
  const response=await fetch(local+job.path,{
