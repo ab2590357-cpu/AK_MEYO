@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 const OWNER='https://axhk-bot-panel.vercel.app';
 const json=(res,status,obj)=>res.status(status).setHeader('Cache-Control','no-store, private').setHeader('X-Content-Type-Options','nosniff').json(obj);
 const reqLimits=new Map();
@@ -53,7 +54,10 @@ export default async function handler(req,res){
    return json(res,400,{error:'Invalid request'});
   if(path!=='/api/multi/create'&&path!=='/api/brand'&&token.length<24)return json(res,401,{error:'Session key required'});
   if(path==='/api/multi/create'&&!limitCreate(req))return json(res,429,{error:'Too many pairing requests. Try again later.'});
-  const u=await ownerFetch('relay',{method:'POST',body:{path,method,token,data}});
+  // Preserve per-visitor creation limits across the Termux relay without exposing raw IPs.
+  const ip=String(req.headers['x-vercel-forwarded-for']||req.headers['x-forwarded-for']||req.socket?.remoteAddress||'unknown').split(',')[0].trim().slice(0,200);
+  const clientKey=crypto.createHmac('sha256',process.env.AXHK_PUBLIC_RELAY_KEY||'').update(ip).digest('hex').slice(0,32);
+  const u=await ownerFetch('relay',{method:'POST',body:{path,method,token,data,clientKey}});
   return json(res,u.status,u.data);
  }catch(err){
   console.error('[A-X-HK public relay]',String(err?.message||err).slice(0,130));
