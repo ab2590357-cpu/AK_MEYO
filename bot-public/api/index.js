@@ -38,7 +38,7 @@ export default async function handler(req,res){
   if(route==='status'&&req.method==='GET'){
    const u=await ownerFetch('status');
    if(u.status!==200)return json(res,503,{error:'Pairing service is temporarily unavailable'});
-   return json(res,200,{enabled:!!u.data.enabled,online:!!u.data.online,message:String(u.data.message||'').slice(0,240),updatedAt:u.data.updatedAt||null});
+   return json(res,200,{enabled:!!u.data.enabled,online:!!u.data.online,hostPairingEnabled:u.data.hostPairingEnabled!==false,message:String(u.data.message||'').slice(0,240),updatedAt:u.data.updatedAt||null});
   }
   if(route==='brand'&&req.method==='GET'){
    const u=await ownerFetch('relay',{method:'POST',body:{path:'/api/brand',method:'GET',token:'',data:{}}});
