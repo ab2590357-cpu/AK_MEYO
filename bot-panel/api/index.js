@@ -116,7 +116,7 @@ export default async function handler(req,res){
    const policy=await pairingPolicy();
    const agent=await getAgent();
    if(p==='/api/public/status'&&req.method==='GET'){
-    return reply(res,200,{enabled:policy.enabled,message:policy.message,online:!asleep(agent),updatedAt:policy.updatedAt||null});
+    return reply(res,200,{enabled:policy.enabled,message:policy.message,online:!asleep(agent),hostPairingEnabled:agent?.multiEnabled!==false,updatedAt:policy.updatedAt||null});
    }
    if(p==='/api/public/relay'&&req.method==='POST'){
     const path=String(req.body?.path||''),method=String(req.body?.method||'GET').toUpperCase();
@@ -153,7 +153,7 @@ export default async function handler(req,res){
    }
    if(p==='/api/bridge/heartbeat'&&req.method==='POST'){
     const b=req.body||{};
-    await writeJSON('status/agent.json',{at:Date.now(),botStatus:limitText(b.botStatus,40),linkedName:limitText(b.linkedName,120),version:limitText(b.version,50),platform:'Termux'}, {allowOverwrite:true});
+    await writeJSON('status/agent.json',{at:Date.now(),botStatus:limitText(b.botStatus,40),linkedName:limitText(b.linkedName,120),version:limitText(b.version,50),multiEnabled:typeof b.multiEnabled==='boolean'?b.multiEnabled:null,platform:'Termux'}, {allowOverwrite:true});
     const policy=await pairingPolicy();
     return reply(res,200,{ok:true,publicPairingEnabled:policy.enabled});
    }
