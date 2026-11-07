@@ -8,6 +8,12 @@ on:
       - "channel-hub/**"
       - "lib/services/channel-hub-worker.js"
       - "lib/index.js"
+      - "lib/core/dispatcher.js"
+      - "lib/core/database.js"
+      - "lib/services/important-alerts.js"
+      - "plugins/core/important-alerts.js"
+      - "tests/important-alert-removal.test.mjs"
+      - "scripts/command-audit.mjs"
       - "lib/services/whatsapp.js"
       - "main.js"
       - "lib/core/signal-log-redaction.js"
@@ -47,6 +53,10 @@ jobs:
           node --check channel-hub/public/contact.js
           node --check lib/services/channel-hub-worker.js
           node --check lib/index.js
+          node --check lib/core/dispatcher.js
+          node --check lib/core/database.js
+          node --check tests/important-alert-removal.test.mjs
+          node --check scripts/command-audit.mjs
           node --check lib/services/whatsapp.js
           node --check main.js
           node --check lib/core/signal-log-redaction.js
@@ -60,4 +70,14 @@ jobs:
           node --check plugins/core/system.js
           node --check plugins/core/v48-media.js
       - name: Run Channel Hub regression tests
-        run: AXHK_TERMUX_MODE=1 node --test tests/channel-hub-api.test.mjs tests/channel-hub-worker.test.mjs tests/channel-menu.test.mjs tests/dashboard-image-upload.test.mjs tests/termux-runtime.test.mjs tests/premium-portal.test.mjs tests/signal-log-redaction.test.mjs
+        run: AXHK_TERMUX_MODE=1 node --test tests/channel-hub-api.test.mjs tests/channel-hub-worker.test.mjs tests/channel-menu.test.mjs tests/dashboard-image-upload.test.mjs tests/termux-runtime.test.mjs tests/premium-portal.test.mjs tests/signal-log-redaction.test.mjs tests/important-alert-removal.test.mjs
+
+      - name: Audit registry without sending WhatsApp messages
+        run: AXHK_TERMUX_MODE=1 node scripts/command-audit.mjs
+      - name: Upload command inventory
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: axhk-command-inventory
+          path: artifacts/command-inventory.json
+          if-no-files-found: ignore
