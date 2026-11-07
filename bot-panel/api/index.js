@@ -119,7 +119,7 @@ export default async function handler(req,res){
     const b=req.body||{},id=String(b.id||'');
     if(!/^[0-9a-f-]{36}$/.test(id)||!Number.isInteger(b.status)||typeof b.bodyBase64!=='string'||b.bodyBase64.length>5_500_000)
      return reply(res,400,{error:'Invalid bridge result'});
-    await writeJSON('results/'+id+'.json',{status:b.status,contentType:limitText(b.contentType,120),bodyBase64:b.bodyBase64});
+    await writeJSON('results/'+id+'.json',{status:b.status,contentType:limitText(b.contentType,120),bodyBase64:b.bodyBase64},{allowOverwrite:true});
     await del(QUEUE_PREFIX+id+'.json').catch(()=>{});
     return reply(res,200,{ok:true});
    }
