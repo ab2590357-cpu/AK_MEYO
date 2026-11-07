@@ -22,6 +22,7 @@ if(!localToken&&!localPassword){
  process.exit(1);
 }
 let cookie='',running=true,lastBeat=0,currentStatus='starting',lastReportedStatus='';
+let lastPublicPolicy=null,lastPolicySync=0,lastLocalUptime=-1;
 const workerHeaders=()=>({
  'x-axhk-bridge-key':key,
  'x-vercel-protection-bypass':bypass,
@@ -98,10 +99,27 @@ async function heartbeat(){
   const resp=await fetch(local+'/api/status',{signal:AbortSignal.timeout(5000)});
   if(resp.ok)snapshot=await resp.json();
  }catch{}
+ const localUptime=Number(snapshot.uptime||0);
+ if(lastLocalUptime>=0&&localUptime>0&&localUptime<lastLocalUptime)lastPublicPolicy=null;
+ lastLocalUptime=localUptime;
  currentStatus=String(snapshot.status||'local_offline');
  const b={botStatus:currentStatus,linkedName:String(snapshot.user?.name||''),version:String(snapshot.version||'')};
- await cloud('heartbeat',{method:'POST',body:JSON.stringify(b)});
+ const acknowledged=await cloud('heartbeat',{method:'POST',body:JSON.stringify(b)});
  lastBeat=Date.now();
+ if(typeof acknowledged?.publicPairingEnabled==='boolean' &&
+    (lastPublicPolicy!==acknowledged.publicPairingEnabled||Date.now()-lastPolicySync>300000)){
+  const desired=acknowledged.publicPairingEnabled;
+  const policyUpdate=desired?{publicMultiEnabled:true,inviteOnly:false,allowMode:false}:{publicMultiEnabled:false};
+  try{
+   const response=await requestLocal({path:'/api/admin/policy',method:'POST',contentType:'application/json',
+    bodyBase64:Buffer.from(JSON.stringify(policyUpdate)).toString('base64')});
+   if(response.status!==200)throw Error('Termux owner policy rejected ('+response.status+')');
+   lastPublicPolicy=desired;lastPolicySync=Date.now();
+   console.log('[A-X-HK relay] Local public pairing '+(desired?'ENABLED':'LOCKED')+'; owner WhatsApp unchanged.');
+  }catch(error){
+   console.error('[A-X-HK relay] Policy sync pending: '+String(error.message||error).slice(0,120));
+  }
+ }
  if(lastReportedStatus!==currentStatus){
   console.log('[A-X-HK relay] Heartbeat accepted; local bot: '+currentStatus);
   lastReportedStatus=currentStatus;
