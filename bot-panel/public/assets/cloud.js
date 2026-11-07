@@ -3,7 +3,7 @@
  banner.innerHTML='<div class="cloud-title"><span class="cloud-status-dot" id="cloud-dot"></span><span>A-X-HK / REMOTE CONTROL</span></div><span class="cloud-info" id="cloud-connection">Checking secure Termux connection…</span><button type="button" id="cloud-theme">Day / Night</button>';
  document.body.prepend(banner);
  const notice=document.createElement('div');notice.className='cloud-offline-notice';notice.hidden=true;notice.setAttribute('role','status');document.body.append(notice);
- document.querySelectorAll('.nav a[href="/link"],a[href="/link"]').forEach(a=>{a.title='Owner-only preview: a public user portal requires a separate release'});
+ document.querySelectorAll('.nav a[href="/link"],a[href="/link"]').forEach(a=>{a.href='https://axhk-user-pairing.vercel.app';a.title='Public A-X-HK WhatsApp pairing portal';a.target='_blank';a.rel='noopener noreferrer'});
  const theme=localStorage.getItem('axhk_cloud_theme')||'dark';
  document.documentElement.dataset.cloudTheme=theme;
  document.getElementById('cloud-theme').onclick=()=>{
