@@ -76,10 +76,12 @@ async function commandProxy(req,res,path){
   typeof req.body==='string'?Buffer.from(req.body):
   req.body===undefined?Buffer.alloc(0):Buffer.from(JSON.stringify(req.body));
  if(binary.length>2_800_000)return reply(res,413,{error:'Files over 2.8 MB require local Termux upload, not the cloud relay.'});
+ const sessionToken=/^\/api\/multi\/ax_[a-f0-9]{14}\//.test(path)?String(req.headers['x-session-token']||''):'';
+ if(sessionToken&&!/^[a-zA-Z0-9_-]{32,180}$/.test(sessionToken))return reply(res,400,{error:'Invalid session key'});
  const id=crypto.randomUUID();
  const pendingPath=QUEUE_PREFIX+id+'.json';
  await writeJSON(pendingPath,{
-  id,at:Date.now(),path,method:req.method,
+  id,at:Date.now(),path,method:req.method,sessionToken,
   contentType:limitText(req.headers['content-type']||'application/json',110),
   bodyBase64:binary.toString('base64')
  });
