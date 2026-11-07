@@ -44,14 +44,19 @@
  function renderStatus(st){
   lastStatus=st;
   const on=!!st.online,allowed=!!st.enabled;
-  available=on;pairingAllowed=allowed;
+  const hostReady=st.hostPairingEnabled!==false;
+  available=on&&hostReady;pairingAllowed=allowed&&hostReady;
   $('statusDot').className='pulse '+(on&&allowed?'ok':'paused');
-  text('statusLabel',!on?'NETWORK OFFLINE':!allowed?'PAIRING PAUSED':'NETWORK ONLINE');
+  text('statusLabel',!on?'NETWORK OFFLINE':!allowed?'PAIRING PAUSED':!hostReady?'BOT PAIRING SETUP':'NETWORK ONLINE');
   show('lockPane',!allowed&&!(on&&id));
-  show('offlinePane',!on);
+  show('offlinePane',!on||(on&&allowed&&!hostReady));
   show('loadingPane',false);
-  show('createPane',on&&allowed&&!id);
-  show('managePane',on&&!!id);
+  show('createPane',on&&allowed&&hostReady&&!id);
+  show('managePane',on&&!!id&&hostReady);
+  if(on&&allowed&&!hostReady){
+   text('offlinePaneTitle','OWNER BOT SETUP PENDING');
+   text('offlinePaneDescription','The owner bot is connected but public multi-session pairing is not yet enabled. Please contact owner support or check back after the bridge syncs.');
+  }
   if(!allowed)text('lockMessage',st.message||'The owner has temporarily paused new pairings.');
   $('pairBtn').disabled=codeBusy||!allowed||!on||connected;
   $('refreshQr').disabled=qrBusy||!allowed||!on||connected;
