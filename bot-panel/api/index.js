@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import {get,put,del,list} from '@vercel/blob';
 
 const PRIVATE={access:'private'};
+const QUEUE_PREFIX='pending-v2/'; // Isolate new requests from legacy timed-out mailbox entries.
 const writeJSON=(name,obj,options={})=>put(name,JSON.stringify(obj),{...PRIVATE,contentType:'application/json',cacheControlMaxAge:60,...options});
 async function readJSON(path) {
  const item=await get(path,PRIVATE);
@@ -63,13 +64,14 @@ async function commandProxy(req,res,path){
   req.body===undefined?Buffer.alloc(0):Buffer.from(JSON.stringify(req.body));
  if(binary.length>2_800_000)return reply(res,413,{error:'Files over 2.8 MB require local Termux upload, not the cloud relay.'});
  const id=crypto.randomUUID();
- await writeJSON('pending/'+id+'.json',{
+ const pendingPath=QUEUE_PREFIX+id+'.json';
+ await writeJSON(pendingPath,{
   id,at:Date.now(),path,method:req.method,
   contentType:limitText(req.headers['content-type']||'application/json',110),
   bodyBase64:binary.toString('base64')
  });
  const resultPath='results/'+id+'.json';
- const deadline=Date.now()+19_000;
+ const deadline=Date.now()+23_000;
  while(Date.now()<deadline){
   await new Promise(resolve=>setTimeout(resolve,1100));
   let result;
@@ -83,7 +85,9 @@ async function commandProxy(req,res,path){
   res.setHeader('Content-Type',String(result.contentType||'application/json').slice(0,120));
   return res.end(body);
  }
- // Keep request queued; worker can process it, but no UI should claim success.
+ // A timed-out read is no longer useful: do not let it clog the queue.
+ // Preserve timed-out writes because they may already be executing on Termux.
+ if(req.method==='GET')await del(pendingPath).catch(()=>{});
  return reply(res,504,{error:'Termux bridge did not respond in time. Check the phone before retrying a write; the request may still execute.'});
 }
 export default async function handler(req,res){
@@ -93,9 +97,18 @@ export default async function handler(req,res){
   if(p.startsWith('/api/bridge/')){
    if(!workerAuth(req))return reply(res,401,{error:'Bridge credential required'});
    if(p==='/api/bridge/next'&&req.method==='GET'){
-    const batch=await list({prefix:'pending/',limit:15});
-    const candidate=batch.blobs?.[0];
-    return reply(res,200,{job:candidate?await readJSON(candidate.pathname):null});
+    const batch=await list({prefix:QUEUE_PREFIX,limit:25});
+    for(const candidate of batch.blobs||[]){
+     const job=await readJSON(candidate.pathname).catch(()=>null);
+     if(!job)continue;
+     // A request older than two minutes must not unexpectedly execute later.
+     if(Date.now()-Number(job.at||0)>120_000){
+      await del(candidate.pathname).catch(()=>{});
+      continue;
+     }
+     return reply(res,200,{job});
+    }
+    return reply(res,200,{job:null});
    }
    if(p==='/api/bridge/heartbeat'&&req.method==='POST'){
     const b=req.body||{};
@@ -107,7 +120,7 @@ export default async function handler(req,res){
     if(!/^[0-9a-f-]{36}$/.test(id)||!Number.isInteger(b.status)||typeof b.bodyBase64!=='string'||b.bodyBase64.length>5_500_000)
      return reply(res,400,{error:'Invalid bridge result'});
     await writeJSON('results/'+id+'.json',{status:b.status,contentType:limitText(b.contentType,120),bodyBase64:b.bodyBase64});
-    await del('pending/'+id+'.json').catch(()=>{});
+    await del(QUEUE_PREFIX+id+'.json').catch(()=>{});
     return reply(res,200,{ok:true});
    }
    return reply(res,404,{error:'Unknown bridge operation'});
