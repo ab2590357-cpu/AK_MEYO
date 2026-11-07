@@ -1,0 +1,65 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/owner.html"
+    },
+    {
+      "source": "/owner",
+      "destination": "/owner.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/pair",
+      "destination": "/pair.html"
+    },
+    {
+      "source": "/sessions",
+      "destination": "/sessions.html"
+    },
+    {
+      "source": "/deploy",
+      "destination": "/deploy.html"
+    },
+    {
+      "source": "/link",
+      "destination": "/link.html"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index?route=:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        }
+      ]
+    }
+  ]
+}
