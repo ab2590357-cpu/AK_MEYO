@@ -43,6 +43,19 @@ async function getAgent(){
  try{return await readJSON('status/agent.json')}catch{return null}
 }
 const asleep=(a)=>!a?.at||Date.now()-Number(a.at)>150_000;
+const pairingDefault={enabled:true,message:'Public pairing is temporarily paused by the owner. Existing linked sessions are safe. Please check back later.'};
+async function pairingPolicy(){
+ try{
+  const p=await readJSON('policy/public-pairing.json');
+  return p&&typeof p.enabled==='boolean'?{enabled:p.enabled,message:limitText(p.message||pairingDefault.message,240),updatedAt:p.updatedAt||null}:pairingDefault;
+ }catch{return pairingDefault}
+}
+const publicPathAllowed=(path,method)=>{
+ if(path==='/api/brand')return method==='GET';
+ if(path==='/api/multi/create')return method==='POST';
+ return /^\/api\/multi\/ax_[a-f0-9]{14}\/(?:state|qr|pair|reconnect|settings)$/.test(path) &&
+  ((/\/(?:state|qr)$/.test(path)&&method==='GET')||(/\/(?:pair|reconnect|settings)$/.test(path)&&method==='POST'));
+};
 function workerAuth(req) {
  const expected=process.env.AXHK_BRIDGE_SECRET;
  return Boolean(expected&&safeEqual(req.headers['x-axhk-bridge-key'],expected));
@@ -94,6 +107,30 @@ export default async function handler(req,res){
  try {
   if(!process.env.BLOB_READ_WRITE_TOKEN)return reply(res,503,{error:'Private relay storage is not configured'});
   const p=pathname(req);
+  if(p.startsWith('/api/public/')){
+   if(!process.env.AXHK_PUBLIC_RELAY_KEY||!safeEqual(req.headers['x-axhk-public-key'],process.env.AXHK_PUBLIC_RELAY_KEY))
+    return reply(res,401,{error:'Private public-gateway credential required'});
+   const policy=await pairingPolicy();
+   const agent=await getAgent();
+   if(p==='/api/public/status'&&req.method==='GET'){
+    return reply(res,200,{enabled:policy.enabled,message:policy.message,online:!asleep(agent),updatedAt:policy.updatedAt||null});
+   }
+   if(p==='/api/public/relay'&&req.method==='POST'){
+    const path=String(req.body?.path||''),method=String(req.body?.method||'GET').toUpperCase();
+    const token=String(req.body?.token||'');
+    const input=req.body?.data||{};
+    if(!publicPathAllowed(path,method))return reply(res,403,{error:'Unsupported public pairing action'});
+    if((path==='/api/multi/create'||/\/pair$/.test(path))&&!policy.enabled)
+     return reply(res,423,{error:policy.message||'Pairing is temporarily closed'});
+    if(!input||typeof input!=='object'||Array.isArray(input))return reply(res,400,{error:'Invalid request'});
+    if(JSON.stringify(input).length>8000||token.length>180)return reply(res,413,{error:'Request too large'});
+    if(path!=='/api/multi/create'&&path!=='/api/brand'&&token.length<24)
+     return reply(res,401,{error:'Session management key required'});
+    const forwarded={...req,method,body:input,headers:{...req.headers,'content-type':'application/json','x-session-token':token}};
+    return commandProxy(forwarded,res,path);
+   }
+   return reply(res,404,{error:'Unknown public pairing operation'});
+  }
   if(p.startsWith('/api/bridge/')){
    if(!workerAuth(req))return reply(res,401,{error:'Bridge credential required'});
    if(p==='/api/bridge/next'&&req.method==='GET'){
@@ -153,6 +190,15 @@ export default async function handler(req,res){
   }
   if(p==='/api/cloud/logout'&&req.method==='POST'){setCookie(res,'',0);return reply(res,200,{ok:true})}
   if(!ownerAuth(req))return reply(res,401,{error:'Owner login required',cloudOwnerLogin:true});
+  if(p==='/api/cloud/pairing'&&req.method==='GET')return reply(res,200,await pairingPolicy());
+  if(p==='/api/cloud/pairing'&&req.method==='POST'){
+   if(typeof req.body?.enabled!=='boolean')return reply(res,400,{error:'Choose enabled or disabled'});
+   const current=await pairingPolicy();
+   const message=limitText(String(req.body.message||current.message).trim(),240);
+   const policy={enabled:req.body.enabled,message:message||pairingDefault.message,updatedAt:new Date().toISOString()};
+   await writeJSON('policy/public-pairing.json',policy,{allowOverwrite:true});
+   return reply(res,200,policy);
+  }
   if(p==='/api/cloud/status'&&req.method==='GET'){
     const agent=await getAgent();
     return reply(res,200,{online:!asleep(agent),agent:asleep(agent)?null:agent});
