@@ -22,15 +22,16 @@
     const r=await fetch('/api/cloud/pairing',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({enabled,message:msg.value}),cache:'no-store'});
     const d=await r.json();if(!r.ok)throw Error(d.error||'Update failed');
     render(d);
-    if(enabled){
-     out.textContent='Public gateway unlocked. Syncing no-invite access with the connected Termux bot…';
-     try{
-      const local=await fetch('/api/admin/policy',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({inviteOnly:false,allowMode:false}),cache:'no-store'});
-      const result=await local.json().catch(()=>({}));
-      if(!local.ok)throw Error(result.error||'Termux policy did not acknowledge the change');
-      out.textContent='✓ Public pairing open. Invite-only and allow-list requirements disabled on the connected bot. If a local MULTI_PAIR_ACCESS_CODE environment secret is set, it must also be cleared on Termux.';
-     }catch(err){out.textContent='Gateway is open, but the bot access policy could not be updated: '+err.message+'. Check Termux bridge and try Unlock again.'}
-    }else out.textContent='✓ Public pairing locked. Website stays online; new sessions, QR and device codes are blocked.';
+    out.textContent=enabled?'Public gateway unlocked. Syncing no-invite access with Termux…':'Public gateway locked. Syncing Termux access mode…';
+    try{
+     const changes=enabled?{publicMultiEnabled:true,inviteOnly:false,allowMode:false}:{publicMultiEnabled:false};
+     const local=await fetch('/api/admin/policy',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(changes),cache:'no-store'});
+     const result=await local.json().catch(()=>({}));
+     if(!local.ok)throw Error(result.error||'Termux owner policy did not acknowledge the change');
+     out.textContent=enabled?'✓ Public pairing unlocked. Bot multi-session enabled; invite-only and allow-list disabled.':'✓ Public pairing locked. The website and existing WhatsApp sessions remain online.';
+    }catch(err){
+     out.textContent=enabled?'Gateway open but Termux pairing mode has not synced: '+err.message+' (retry Unlock after Bridge is online).':'Gateway is locked; Termux update pending: '+err.message;
+    }
    }catch(e){out.textContent='Could not save: '+e.message}
    finally{loading=false;open.disabled=close.disabled=false}
   }
