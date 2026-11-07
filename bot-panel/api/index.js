@@ -77,11 +77,12 @@ async function commandProxy(req,res,path){
   req.body===undefined?Buffer.alloc(0):Buffer.from(JSON.stringify(req.body));
  if(binary.length>2_800_000)return reply(res,413,{error:'Files over 2.8 MB require local Termux upload, not the cloud relay.'});
  const sessionToken=/^\/api\/multi\/ax_[a-f0-9]{14}\//.test(path)?String(req.headers['x-session-token']||''):'';
+ const publicClient=(path==='/api/multi/create'&&/^[a-f0-9]{32}$/.test(String(req.headers['x-axhk-public-client']||'')))?String(req.headers['x-axhk-public-client']):'';
  if(sessionToken&&!/^[a-zA-Z0-9_-]{32,180}$/.test(sessionToken))return reply(res,400,{error:'Invalid session key'});
  const id=crypto.randomUUID();
  const pendingPath=QUEUE_PREFIX+id+'.json';
  await writeJSON(pendingPath,{
-  id,at:Date.now(),path,method:req.method,sessionToken,
+  id,at:Date.now(),path,method:req.method,sessionToken,publicClient,
   contentType:limitText(req.headers['content-type']||'application/json',110),
   bodyBase64:binary.toString('base64')
  });
@@ -128,7 +129,8 @@ export default async function handler(req,res){
     if(JSON.stringify(input).length>8000||token.length>180)return reply(res,413,{error:'Request too large'});
     if(path!=='/api/multi/create'&&path!=='/api/brand'&&token.length<24)
      return reply(res,401,{error:'Session management key required'});
-    const forwarded={...req,method,body:input,headers:{...req.headers,'content-type':'application/json','x-session-token':token}};
+    const clientKey=/^[a-f0-9]{32}$/.test(String(req.body?.clientKey||''))?String(req.body.clientKey):'';
+    const forwarded={...req,method,body:input,headers:{...req.headers,'content-type':'application/json','x-session-token':token,'x-axhk-public-client':clientKey}};
     return commandProxy(forwarded,res,path);
    }
    return reply(res,404,{error:'Unknown public pairing operation'});
