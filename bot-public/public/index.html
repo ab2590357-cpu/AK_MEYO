@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#06110e"><meta name="description" content="Secure public WhatsApp bot pairing portal for A-X-HK.">
+<title>A-X-HK · Secure WhatsApp Pairing</title><link rel="stylesheet" href="/assets/site.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><script src="/assets/site.js" defer></script></head><body>
+<div class="orb orb-one"></div><div class="orb orb-two"></div>
+<header class="topbar wrap">
+ <a class="mark" href="/" aria-label="A-X-HK Home"><span class="logo">AX</span><span><strong>A-X-HK</strong><small>PUBLIC PAIRING CENTER</small></span></a>
+ <div class="topstatus"><span id="statusDot" class="pulse"></span><span id="statusLabel">Checking service…</span></div>
+</header>
+<main class="wrap">
+ <section class="hero">
+  <div class="eyebrow"><span class="line"></span> ENCRYPTED LINKED-DEVICE PORTAL <span class="line"></span></div>
+  <h1>YOUR WHATSAPP.<br><em>YOUR A-X-HK BOT.</em></h1>
+  <p class="intro">Connect your own WhatsApp account to the A-X-HK network with a secure QR or pairing code. Private session controls, isolated access, and a clean experience.</p>
+  <div class="hero-badges"><span>◈ Individual sessions</span><span>◈ Secure QR pairing</span><span>◈ Private management key</span></div>
+ </section>
+ <section id="loadingPane" class="panel loading-pane" aria-live="polite">
+  <div class="spinner"></div><h2>Checking pairing availability</h2><p>Connecting securely to the A-X-HK network.</p>
+ </section>
+ <section id="lockPane" class="panel lock-panel hidden" aria-live="polite">
+  <div class="lock-glyph">⏸</div><div class="eyebrow">OWNER CONTROLLED ACCESS</div>
+  <h2>Pairing is <span>temporarily closed.</span></h2>
+  <p id="lockMessage">New device pairing has been paused by the network owner. The website is available, but new connections are disabled.</p>
+  <div class="lock-divider"></div>
+  <div class="lock-foot"><span class="statuscircle"></span> Existing connected sessions remain safe and unaffected.</div>
+  <button type="button" id="lockRefresh" class="button secondary">Check availability again</button>
+ </section>
+ <section id="offlinePane" class="panel offline-panel hidden" aria-live="polite">
+  <div class="lock-glyph">◌</div><div class="eyebrow">CONNECTION UNAVAILABLE</div>
+  <h2>Bot network <span>temporarily offline.</span></h2>
+  <p>The A-X-HK owner device is not currently responding. No account needs to be unlinked. Please try again when the network is online.</p>
+  <button type="button" id="offlineRefresh" class="button secondary">Retry secure connection</button>
+ </section>
+ <section id="createPane" class="panel panel-columns hidden">
+  <div class="panel-body">
+   <div class="step"><span>01</span> CONNECT YOUR ACCOUNT</div>
+   <h2>Create your <em>private session.</em></h2>
+   <p class="sub">Use the number you own, including its international country code. Every session gets a separate private management key.</p>
+   <form id="createForm">
+    <label for="phone">WhatsApp number</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="19" placeholder="923001234567" required>
+    <label for="nickname">Session name</label><input id="nickname" name="nickname" type="text" maxlength="50" placeholder="My A-X-HK bot">
+    <div id="accessWrap" class="hidden"><label for="accessCode">Owner access code (if required)</label><input id="accessCode" type="password" autocomplete="off" placeholder="Enter your invite code"></div>
+    <button id="createBtn" class="button primary" type="submit">Create secure link <span>↗</span></button>
+   </form>
+   <p class="smallnote">By continuing, you confirm you own or are authorized to link this account. Your QR and management key must remain private.</p>
+   <p id="createError" class="error" role="alert"></p>
+  </div>
+  <div class="illustration"><div class="inner-ring"><span class="center-logo">AX</span></div><div class="scan-label">SECURE · MULTI-DEVICE · PRIVATE</div></div>
+ </section>
+ <section id="managePane" class="panel hidden">
+  <div class="manage-heading"><div><div class="step"><span>02</span> YOUR PRIVATE CONTROL CENTER</div><h2 id="sessionTitle">Your A-X-HK session</h2><p class="sub">This browser stores your private session key. Never share the key or QR with another person.</p></div><div id="sessionStatus" class="session-pill">CONNECTING</div></div>
+  <div class="session-grid">
+   <div class="qr-pane"><div id="qrBox" class="qr-box"><div class="spinner"></div><span>Preparing your QR</span></div><button id="refreshQr" class="button secondary" type="button">Refresh QR</button><p class="smallnote">WhatsApp → Linked Devices → Link a Device → scan QR.</p></div>
+   <div class="session-details"><h3>Session details</h3><div class="detail"><span>Status</span><strong id="detailStatus">Starting</strong></div><div class="detail"><span>Session ID</span><strong id="detailId">—</strong></div><div class="detail"><span>Prefix</span><strong id="detailPrefix">.</strong></div><div class="detail"><span>Mode</span><strong id="detailMode">Public</strong></div>
+    <div id="pairActions"><p class="smallnote">Can't scan QR? Get a WhatsApp pairing code.</p><button id="pairBtn" class="button primary" type="button">Generate pairing code ↗</button><div id="pairCode" class="codebox" aria-live="polite">— — — —</div></div>
+    <div id="connectedMessage" class="success hidden">✓ Your WhatsApp is connected. Your A-X-HK bot is active.</div>
+   </div>
+  </div>
+  <div class="settings"><h3>My session settings</h3><p class="sub">Only your own bot instance will be updated.</p><div class="settings-grid">
+    <div><label for="botMode">Bot mode</label><select id="botMode"><option value="public">Public</option><option value="private">Private</option></select></div>
+    <div><label for="botPrefix">Command prefix</label><input id="botPrefix" maxlength="3" value="."></div>
+   </div><button class="button secondary" type="button" id="saveSettings">Save my settings</button></div>
+  <div class="action-bottom"><button id="forgetBrowser" type="button" class="text-button">Forget this browser's key</button><span>Existing WhatsApp session stays linked.</span></div>
+  <p id="manageError" class="error" role="alert"></p>
+ </section>
+ <section class="features"><div><span class="feature-icon">◇</span><strong>Isolated access</strong><p>Your private key can only manage your own session.</p></div><div><span class="feature-icon">▣</span><strong>Protected pairing</strong><p>Secure QR or WhatsApp device code, never an owner login.</p></div><div><span class="feature-icon">♧</span><strong>Owner-controlled</strong><p>New pairings can be paused without closing this website.</p></div></section>
+</main>
+<footer class="footer wrap"><span>A-X-HK © 2026 · SECURE USER PORTAL</span><span>POWERED BY A-X-HK</span></footer>
+</body></html>
