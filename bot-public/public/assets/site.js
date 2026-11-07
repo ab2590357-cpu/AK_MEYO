@@ -46,17 +46,17 @@
   const on=!!st.online,allowed=!!st.enabled;
   const hostReady=st.hostPairingEnabled!==false;
   available=on&&hostReady;pairingAllowed=allowed&&hostReady;
-  $('statusDot').className='pulse '+(on&&allowed?'ok':'paused');
+  $('statusDot').className='pulse '+(on&&allowed&&hostReady?'ok':'paused');
   text('statusLabel',!on?'NETWORK OFFLINE':!allowed?'PAIRING PAUSED':!hostReady?'BOT PAIRING SETUP':'NETWORK ONLINE');
   show('lockPane',!allowed&&!(on&&id));
-  show('offlinePane',!on||(on&&allowed&&!hostReady));
+  show('offlinePane',allowed&&(!on||!hostReady));
   show('loadingPane',false);
   show('createPane',on&&allowed&&hostReady&&!id);
   show('managePane',on&&!!id&&hostReady);
-  if(on&&allowed&&!hostReady){
-   text('offlinePaneTitle','OWNER BOT SETUP PENDING');
-   text('offlinePaneDescription','The owner bot is connected but public multi-session pairing is not yet enabled. Please contact owner support or check back after the bridge syncs.');
-  }
+  text('offlinePaneTitle',on&&allowed&&!hostReady?'BOT PAIRING SETUP PENDING':'GATEWAY OFFLINE');
+  text('offlinePaneDescription',on&&allowed&&!hostReady?
+   'The bot is connected but public multi-session pairing is not enabled yet. Owner setup or a bridge sync is required; please contact owner support.':
+   'The owner bridge is temporarily unavailable. Please retry when it reconnects. No WhatsApp account has been unlinked.');
   if(!allowed)text('lockMessage',st.message||'The owner has temporarily paused new pairings.');
   $('pairBtn').disabled=codeBusy||!allowed||!on||connected;
   $('refreshQr').disabled=qrBusy||!allowed||!on||connected;
