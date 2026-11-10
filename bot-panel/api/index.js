@@ -1,16 +1,7 @@
 import crypto from 'node:crypto';
-import {get,put,del,list} from '@vercel/blob';
+import {readJSON,writeJSON,deleteJSON,listJSON} from './supabase-store.js';
 
-const PRIVATE={access:'private'};
-const QUEUE_PREFIX='pending-v2/'; // Isolate new requests from legacy timed-out mailbox entries.
-const writeJSON=(name,obj,options={})=>put(name,JSON.stringify(obj),{...PRIVATE,contentType:'application/json',cacheControlMaxAge:60,...options});
-async function readJSON(path) {
- const item=await get(path,PRIVATE);
- if(!item?.stream)return null;
- const reader=item.stream.getReader();let chunks=[],size=0;
- while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>4_000_000)throw Error('Cloud record exceeds limit');chunks.push(value);}
- return JSON.parse(Buffer.concat(chunks.map(x=>Buffer.from(x))).toString('utf8'));
-}
+const QUEUE_PREFIX='pending-v2/';
 const reply=(res,code,obj)=>{res.status(code).setHeader('Cache-Control','private, no-store').setHeader('X-Content-Type-Options','nosniff').json(obj)};
 const limitText=(x,n)=>String(x||'').slice(0,n);
 const safeEqual=(a,b)=>{const x=Buffer.from(String(a||'')),y=Buffer.from(String(b||''));return x.length===y.length&&crypto.timingSafeEqual(x,y)};
@@ -43,7 +34,7 @@ async function getAgent(){
  try{return await readJSON('status/agent.json')}catch{return null}
 }
 const asleep=(a)=>!a?.at||Date.now()-Number(a.at)>150_000;
-const pairingDefault={enabled:true,message:'Public pairing is temporarily paused by the owner. Existing linked sessions are safe. Please check back later.'};
+const pairingDefault={enabled:false,message:'New public pairing is temporarily unavailable while the owner completes secure relay setup. Existing linked sessions are unaffected.'};
 async function pairingPolicy(){
  try{
   const p=await readJSON('policy/public-pairing.json');
@@ -93,7 +84,7 @@ async function commandProxy(req,res,path){
   let result;
   try{result=await readJSON(resultPath)}catch{}
   if(!result)continue;
-  await del(resultPath).catch(()=>{});
+  await deleteJSON(resultPath).catch(()=>{});
   const body=Buffer.from(result.bodyBase64||'','base64');
   res.status(Math.min(599,Math.max(100,Number(result.status||502))));
   res.setHeader('Cache-Control','private, no-store');
@@ -103,12 +94,12 @@ async function commandProxy(req,res,path){
  }
  // A timed-out read is no longer useful: do not let it clog the queue.
  // Preserve timed-out writes because they may already be executing on Termux.
- if(req.method==='GET')await del(pendingPath).catch(()=>{});
+ if(req.method==='GET')await deleteJSON(pendingPath).catch(()=>{});
  return reply(res,504,{error:'Termux bridge did not respond in time. Check the phone before retrying a write; the request may still execute.'});
 }
 export default async function handler(req,res){
  try {
-  if(!process.env.BLOB_READ_WRITE_TOKEN)return reply(res,503,{error:'Private relay storage is not configured'});
+  if(!process.env.AXHK_SUPABASE_RELAY_URL||!process.env.AXHK_SUPABASE_RELAY_TOKEN)return reply(res,503,{error:'Private Supabase relay storage is not configured'});
   const p=pathname(req);
   if(p.startsWith('/api/public/')){
    if(!process.env.AXHK_PUBLIC_RELAY_KEY||!safeEqual(req.headers['x-axhk-public-key'],process.env.AXHK_PUBLIC_RELAY_KEY))
@@ -138,13 +129,13 @@ export default async function handler(req,res){
   if(p.startsWith('/api/bridge/')){
    if(!workerAuth(req))return reply(res,401,{error:'Bridge credential required'});
    if(p==='/api/bridge/next'&&req.method==='GET'){
-    const batch=await list({prefix:QUEUE_PREFIX,limit:25});
+    const batch=await listJSON({prefix:QUEUE_PREFIX,limit:25});
     for(const candidate of batch.blobs||[]){
      const job=await readJSON(candidate.pathname).catch(()=>null);
      if(!job)continue;
      // A request older than two minutes must not unexpectedly execute later.
      if(Date.now()-Number(job.at||0)>120_000){
-      await del(candidate.pathname).catch(()=>{});
+      await deleteJSON(candidate.pathname).catch(()=>{});
       continue;
      }
      return reply(res,200,{job});
@@ -162,7 +153,7 @@ export default async function handler(req,res){
     if(!/^[0-9a-f-]{36}$/.test(id)||!Number.isInteger(b.status)||typeof b.bodyBase64!=='string'||b.bodyBase64.length>5_500_000)
      return reply(res,400,{error:'Invalid bridge result'});
     await writeJSON('results/'+id+'.json',{status:b.status,contentType:limitText(b.contentType,120),bodyBase64:b.bodyBase64},{allowOverwrite:true});
-    await del(QUEUE_PREFIX+id+'.json').catch(()=>{});
+    await deleteJSON(QUEUE_PREFIX+id+'.json').catch(()=>{});
     return reply(res,200,{ok:true});
    }
    return reply(res,404,{error:'Unknown bridge operation'});
