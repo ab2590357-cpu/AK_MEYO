@@ -11,7 +11,9 @@ test('cloud routes require owner login and worker authentication',async()=>{
  assert.match(api,/crypto\.scryptSync/);
  assert.match(api,/HttpOnly; SameSite=Strict/);
  assert.match(api,/Termux bridge is offline/);
- assert.match(api,/@vercel\/blob/);
+ assert.match(api,/supabase-store/);
+ assert.doesNotMatch(api,/@vercel\\/blob/);
+ assert.match(api,/AXHK_SUPABASE_RELAY_URL/);
  assert.doesNotMatch(api,/https?:\/\/127\.0\.0\.1/);
 });
 test('Termux agent connects only outbound and keeps credentials on localhost',async()=>{
@@ -39,4 +41,19 @@ test('Vercel rewrites support owner pages and protected API',async()=>{
  assert.ok(paths.includes('/api/:path*'));
  for(const p of ['/owner','/dashboard','/pair','/sessions','/deploy'])assert.ok(paths.includes(p));
  assert.equal(cfg.functions['api/index.js'].maxDuration,30);
+});
+
+test('private Supabase relay credentials remain server-side and access is scoped',async()=>{
+ const a=await read('api/supabase-store.js');
+ assert.match(a,/AXHK_SUPABASE_RELAY_TOKEN/);
+ assert.match(a,/x-axhk-relay-token/);
+ assert.match(a,/signal:controller.signal/);
+ const api=await read('api/index.js');
+ assert.match(api,/enabled:false/);
+ assert.doesNotMatch(api,/BLOB_READ_WRITE_TOKEN/);
+});
+test('Termux agent polls at a free-tier-friendly interval',async()=>{
+ const agent=await read('termux-agent.mjs');
+ assert.match(agent,/await sleep\(12000\)/);
+ assert.match(agent,/publicPairingEnabled/);
 });
