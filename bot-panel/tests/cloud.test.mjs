@@ -12,7 +12,7 @@ test('cloud routes require owner login and worker authentication',async()=>{
  assert.match(api,/HttpOnly; SameSite=Strict/);
  assert.match(api,/Termux bridge is offline/);
  assert.match(api,/supabase-store/);
- assert.doesNotMatch(api,/@vercel\\/blob/);
+ assert.equal(api.includes('@vercel/blob'),false);
  assert.match(api,/AXHK_SUPABASE_RELAY_URL/);
  assert.doesNotMatch(api,/https?:\/\/127\.0\.0\.1/);
 });
