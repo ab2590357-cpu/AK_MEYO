@@ -162,6 +162,7 @@ while(running){
   console.error('[A-X-HK relay]',(String(err?.message||err)+reason).slice(0,210));
   await sleep(10000);
  }
- await sleep(5000);
+ // Keep Edge Function calls inside the Supabase free-tier monthly invocation budget.
+ await sleep(12000);
 }
 console.log('[A-X-HK] Relay stopped; WhatsApp bot was not stopped or reset.');
